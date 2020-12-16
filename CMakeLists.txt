@@ -138,11 +138,12 @@ if (JEMALLOC_FOUND)
     target_link_libraries(grape-lite ${JEMALLOC_LIBRARIES})
 endif ()
 
+
 if (NOT GFLAGS_FOUND)
     message(WARNING "Disable analytical_apps because gflags not found")
 else ()
     add_executable(analytical_apps examples/analytical_apps/flags.cc
-            examples/analytical_apps/run_app.cc)
+            examples/analytical_apps/run_app.cc examples/parametric_simulation/run_spair.cc)
     target_include_directories(analytical_apps PRIVATE
             examples/analytical_apps)
     set_target_properties(analytical_apps PROPERTIES OUTPUT_NAME run_app)
@@ -167,7 +168,19 @@ else ()
     install_libgrapelite_target(gnn_sampler)
 endif ()
 
-set(EXAMPLES_DIR ${PROJECT_SOURCE_DIR}/examples)
+if (NOT GFLAGS_FOUND)
+    message(WARNING "Disable parametric_simulation because gflags not found")
+else ()
+    add_executable(parametric_simulation examples/parametric_simulation/run_spair.cc)
+    target_include_directories(parametric_simulation PRIVATE
+            examples/parametric_simulation/spair)
+    set_target_properties(parametric_simulation PROPERTIES OUTPUT_NAME run_spair)
+    target_link_libraries(parametric_simulation grape-lite ${MPI_CXX_LIBRARIES}
+            ${GLOG_LIBRARIES} ${GFLAGS_LIBRARIES} ${CMAKE_DL_LIBS})
+    install_libgrapelite_target(parametric_simulation)
+    set(EXAMPLES_DIR ${PROJECT_SOURCE_DIR}/examples)
+endif ()
+
 
 if (PROFILING)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/thirdparty/atlarge-research-granula
@@ -201,6 +214,12 @@ install(DIRECTORY ${EXAMPLES_DIR}/gnn_sampler
         FILES_MATCHING
         PATTERN "*.h"
 )
+
+install(DIRECTORY ${EXAMPLES_DIR}/parametric_simulation/spair
+        DESTINATION include/grape/analytical_apps
+        FILES_MATCHING
+        PATTERN "*.h"
+        )
 
 configure_file(libgrapelite-config.in.cmake
                "${PROJECT_BINARY_DIR}/libgrapelite-config.cmake" @ONLY

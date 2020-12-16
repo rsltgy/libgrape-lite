@@ -55,6 +55,8 @@ limitations under the License.
 #include "timer.h"
 #include "wcc/wcc.h"
 #include "wcc/wcc_auto.h"
+#include "examples/parametric_simulation/spair/spair.h"
+#include "../parametric_simulation/spair/spair.h"
 
 namespace grape {
 
@@ -263,7 +265,14 @@ void Run() {
       using AppType = LCC<GraphType>;
       CreateAndQuery<GraphType, AppType>(comm_spec, efile, vfile, out_prefix,
                                          fnum, spec);
-    } else {
+    } else if(name == "spair"){
+      using GraphType = ImmutableEdgecutFragment<OID_T, VID_T, VDATA_T, EDATA_T,
+          LoadStrategy::kBothOutIn>;
+      using AppType = Spair<GraphType>;
+      CreateAndQuery<GraphType, AppType, int>(
+          comm_spec, efile, vfile, out_prefix, fnum, spec, FLAGS_cdlp_mr);
+
+    }else {
       LOG(FATAL) << "No avaiable application named [" << name << "].";
     }
   }

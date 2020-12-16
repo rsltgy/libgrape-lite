@@ -34,16 +34,20 @@ int main(int argc, char* argv[]) {
   google::InitGoogleLogging("analytical_apps");
   google::InstallFailureSignalHandler();
 
+
   grape::Init();
 
   std::string name = FLAGS_application;
   if (name.find("sssp") != std::string::npos) {
     grape::Run<int64_t, uint32_t, grape::EmptyType, double>();
-  } else {
+  } if(name.find("spair") != std::string::npos) {
+    grape::Run<int64_t, uint32_t, std::string, std::string>();
+  }else {
     grape::Run<int64_t, uint32_t, grape::EmptyType, grape::EmptyType>();
   }
 
   grape::Finalize();
 
   google::ShutdownGoogleLogging();
+  return 0;
 }
