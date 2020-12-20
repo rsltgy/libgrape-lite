@@ -26,6 +26,7 @@ class Spair : public ParallelAppBase<FRAG_T, SpairContext<FRAG_T>>,
   void PEval(const fragment_t& frag, context_t& ctx,
              message_manager_t& messages) {
 
+
     /*auto inner_vert = frag.InnerVertices();
     for (auto v : inner_vert ) {
       auto oid = frag.Gid2Oid(frag.Vertex2Gid(v));
@@ -40,14 +41,22 @@ class Spair : public ParallelAppBase<FRAG_T, SpairContext<FRAG_T>>,
     else
       cout << frag.fid() << " could not find " << endl;*/
 
-
     int u = ctx.u;
     int v = ctx.v;
-    double  sigma = 0.8;
-    double delta = 0.2;
+    double  sigma = ctx.sigma;
+    double delta = ctx.delta;
     ParaMatch<FRAG_T> p;
     bool res = p.match(ctx.GD,frag,ctx.g_paths,ctx.g_descendants,ctx.word_embeddings,u,v,sigma,delta);
     cout << frag.fid() << " " << res  << endl;
+
+
+    /*auto l = frag.OuterVertices();
+      for (auto v : l ) {
+        //auto oid = frag.Gid2Oid(frag.Vertex2Gid(v));
+        //std::cout << frag.fid()  << " " << oid << " " << frag.GetData(v) << std::endl;
+        ctx.partial_result[v] = 0;
+      }*/
+
 
 /*
     vertex_t u1;
@@ -71,6 +80,8 @@ class Spair : public ParallelAppBase<FRAG_T, SpairContext<FRAG_T>>,
 
   void IncEval(const fragment_t& frag, context_t& ctx,
                message_manager_t& messages) {
+
+
 
 
 

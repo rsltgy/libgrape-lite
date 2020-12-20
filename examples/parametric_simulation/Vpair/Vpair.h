@@ -42,30 +42,30 @@ void PEval(const fragment_t& frag, context_t& ctx,
   auto &g_paths = ctx.g_paths;
   auto &g_descendants = ctx.g_descendants;
   auto &word_embeddings = ctx.word_embeddings;
-  auto &sigma = ctx.sigma;
-  auto &delta = ctx.delta;
-  /*vertex_t u1(0);
-  unsigned int a = frag.Vertex2Gid(u1);
-  if (a <= 100000000)
-    cout << frag.fid() <<  frag.GetData((vertex_t)a) << endl;
-  else
-    cout << frag.fid() << " could not find " << endl;*/
+  double &sigma = ctx.sigma;
+  double &delta = ctx.delta;
+  ParaMatch<FRAG_T> p;
 
   string u_label = GD.nodes()[u];
+  vector<double> u_t_word_vector;
+  Reader::calculate_word_vector(ctx.word_embeddings,u_label,u_t_word_vector);
 
   auto inner_vert = frag.InnerVertices();
   for (auto v : inner_vert ) {
-    vector<double> u_t_word_vector;
-    Reader::calculate_word_vector(ctx.word_embeddings,GD.nodes()[u],u_t_word_vector);
-
+    //auto oid = frag.Gid2Oid(frag.Vertex2Gid(v));
+    //std::cout << frag.fid()  << " " << oid << " " << frag.GetData(v) << std::endl;
     string v_str = frag.GetData(v);
-
+    //cout << GD.nodes()[u] << " " << v_str << endl;
     vector<double> v_g_word_vector;
+    boost::trim_right(v_str);
     Reader::calculate_word_vector(ctx.word_embeddings,v_str,v_g_word_vector);
 
-    if(!u_t_word_vector.empty() && !v_g_word_vector.empty() ) {
+    double score = p.cosine_similarity(u_t_word_vector,v_g_word_vector);
+
+    if(score >= sigma ) {
       auto oid = frag.Gid2Oid(frag.Vertex2Gid(v));
       auto es = frag.GetOutgoingAdjList(v);
+      //std::cout << frag.fid()  << " " << oid << " " << frag.GetData(v) << std::endl;
       C.push_back(make_pair(oid, es.Size()));
     }
 
@@ -75,20 +75,29 @@ void PEval(const fragment_t& frag, context_t& ctx,
     return a.second < b.second;
   });
 
-
   bool match = false;
   for(auto v : C){
+    //cout << frag.fid() << " --> " << u << " " << v.first << endl;
     auto it = ctx.cache.find(make_pair(u,v.first));
-    if(it != ctx.cache.end() && ctx.cache[make_pair(u,v.first)].first )
-      ctx.match_set.push_back(v.first);
+    if(it != ctx.cache.end()){
+        if(ctx.cache[make_pair(u,v.first)].first){
+          ctx.match_set.push_back(v.first);
+        }
+    }
     else{
-      ParaMatch<FRAG_T> p;
-      match = p.match_pair(GD,frag,g_paths,g_descendants,u,v.first,sigma,delta,cache,word_embeddings,ecache_u,ecache_v);
+      int v_vertex = v.first;
+      match = p.match_pair(GD,frag,g_paths,g_descendants,u,v_vertex,sigma,delta,cache,word_embeddings,ecache_u,ecache_v);
       if(match)
         match_set.push_back(v.first);
     }
 
   }
+
+
+  for(auto matched_vertices : match_set){
+    cout << frag.fid() << " " <<  matched_vertices << endl;
+  }
+
 
 }
 

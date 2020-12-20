@@ -60,9 +60,9 @@ void Reader::calculate_word_vector(unordered_map<string,vector<double>> &word_em
     }
   }
   return;
-  //if(v_g_word_vector.empty()) return;
-  //cnt = each_word.size();
-  //transform(v_g_word_vector.begin(), v_g_word_vector.end(), v_g_word_vector.begin(), [cnt](double &c){ return c/cnt; });
+  /*if(v_g_word_vector.empty()) return;
+  cnt = each_word.size();
+  transform(v_g_word_vector.begin(), v_g_word_vector.end(), v_g_word_vector.begin(), [cnt](double &c){ return c/cnt; });*/
 
   //if (v_g_word_vector.empty()) return;
   /*if (each_word.size() != cnt){

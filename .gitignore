@@ -29,3 +29,5 @@ compile_commands.json
 
 # vscode
 .vscode
+dataset/glove.twitter.27B.25d.txt
+

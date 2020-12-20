@@ -50,7 +50,7 @@ class VpairContext : public VertexDataContext<FRAG_T, double> {
       }
     }
     d_file.close();
-    for(int i = 0; i < max_vertex_number; i++){
+    for(int i = 0; i <= max_vertex_number; i++){
       g_paths.push_back(vector<pair<int,string>>());
       g_descendants.push_back(vector<int>());
     }
@@ -63,7 +63,7 @@ class VpairContext : public VertexDataContext<FRAG_T, double> {
         path_string += " " + temp_string;
 
       g_descendants_[from].push_back(to);
-      if(g_paths_[from].size() >= 5) continue;
+      if(g_paths_[from].size() >= 100) continue;
       g_paths_[from].push_back(make_pair(to,path_string));
     }
     d_file.close();
@@ -71,7 +71,7 @@ class VpairContext : public VertexDataContext<FRAG_T, double> {
 
 
   void Init(ParallelMessageManager& messages, string path_of_word_embeddings_,
-            string gd_evfile_, string g_pathfile_, string gd_pathfile_,oid_t u_, oid_t v_) {
+            string gd_evfile_, string g_pathfile_, string gd_pathfile_,oid_t u_, oid_t v_,double sigma_,double delta_) {
     auto& frag = this->fragment();
     // Read word embeddings
     Reader::read_word_vector(path_of_word_embeddings_,word_embeddings);
@@ -79,8 +79,9 @@ class VpairContext : public VertexDataContext<FRAG_T, double> {
     this->GD.load_from_file(gd_evfile_);
     this->read_paths(g_pathfile_,g_paths,g_descendants);
     this->u = u_;
+    this->sigma = sigma_;
+    this->delta = delta_;
 
-    partial_result.SetValue(std::numeric_limits<double>::max());
     curr_modified.Init(frag.Vertices());
     next_modified.Init(frag.Vertices());
 

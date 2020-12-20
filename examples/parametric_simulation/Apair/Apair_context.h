@@ -72,7 +72,7 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
 
 
   void Init(ParallelMessageManager& messages, string path_of_word_embeddings_,
-            string gd_evfile_, string g_pathfile_, string gd_pathfile_,oid_t u_, oid_t v_) {
+            string gd_evfile_, string g_pathfile_, string gd_pathfile_,oid_t u_, oid_t v_,double sigma_,double delta_) {
     auto& frag = this->fragment();
     // Read word embeddings
     Reader::read_word_vector(path_of_word_embeddings_,word_embeddings);
@@ -80,6 +80,8 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
     this->GD.load_from_file(gd_evfile_);
     this->read_paths(g_pathfile_,g_paths,g_descendants);
     this->u = u_;
+    this->sigma = sigma_;
+    this->delta = delta_;
 
     partial_result.SetValue(std::numeric_limits<double>::max());
     curr_modified.Init(frag.Vertices());
@@ -110,7 +112,7 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
   vector<vector<pair<int,string>>> g_paths;
   vector<vector<int>> g_descendants;
   vector<pair<int,pair<int,int>>> C;
-  vector<int> match_set;
+  vector<pair<int,int>> match_set;
   unordered_map<std::pair<int,int>, pair<bool, vector<std::pair<int,int>>>, boost::hash<std::pair<int,int>>> cache;
   unordered_map<int,vector<int>> ecache_u;
   unordered_map<int,vector<int>> ecache_v;

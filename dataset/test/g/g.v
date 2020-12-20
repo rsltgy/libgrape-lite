@@ -6,7 +6,7 @@
 5 world
 6 print man
 7 nothing
-8 here
-9 print man
+8 print
+9 yes
 10 nothing
-11 here
+11 yes

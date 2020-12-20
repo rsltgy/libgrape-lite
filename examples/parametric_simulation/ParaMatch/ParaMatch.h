@@ -95,28 +95,22 @@ class ParaMatch {
                              unordered_map<std::pair<int,int>, pair<bool, vector<std::pair<int,int>>>, boost::hash<std::pair<int,int>>> &cache,
                              unordered_map<string,vector<double>> &word_embedding, unordered_map<int,vector<int>> &ecache_u,unordered_map<int,vector<int>> &ecache_v){
 
-
     vector<double> u_word_vector;
     Reader::calculate_word_vector(word_embedding,GD.nodes()[u],u_word_vector);
 
-    vertex_t v1(v);
-    unsigned int a = frag.Vertex2Gid(v1);
+    vertex_t frag_vert;
+    //cout << u << " --> " << v << " " << endl;
+    if (!frag.GetVertex(v,frag_vert)) return false; // if the vertex not in the fragment
     string v_data;
-    if (a <= 100000000){
-      //cout << frag.fid() << " found vertex " << v << " and its data is " <<  frag.GetData((vertex_t)a) << endl;
-      v_data = frag.GetData((vertex_t)a);
-    }
-    else{
-      //cout << frag.fid() << " could not find vertex " << v << endl;
-      return false;
-    }
+    v_data = frag.GetData((vertex_t)frag_vert);
 
     vector<double> v_word_vector;
     boost::trim_right(v_data);
     Reader::calculate_word_vector(word_embedding,v_data,v_word_vector);
 
     double score = cosine_similarity(u_word_vector,v_word_vector);
-    //cout <<  " score of " << u << " and " << v << " is" << score << endl;
+
+
     if(score <= sigma){                         // if the label of node u and v do not match then return false
       cache[make_pair(u,v)].first = false;
       cache[make_pair(u,v)].second.clear();
@@ -128,7 +122,6 @@ class ParaMatch {
       cache[make_pair(u,v)].second.clear();
       return true;
     }
-
     if(ecache_u.find(u) == ecache_u.end()){
       ecache_u[u] = GD.descendants()[u];
     }
@@ -152,25 +145,21 @@ class ParaMatch {
       u_word_vector.clear();
       Reader::calculate_word_vector(word_embedding,GD.nodes()[node_u],u_word_vector);
       for(int node_v : v_v_k){
-        vertex_t node_v_(node_v);
-        a = frag.Vertex2Gid(node_v_);
-        if (a <= 100000000){
-          v_data = frag.GetData((vertex_t)a);
-        }
+        vertex_t frag_vert;
+        if (!frag.GetVertex(node_v,frag_vert)) return false; // if the vertex not in the fragment
+        v_data = frag.GetData((vertex_t)frag_vert);
         //cout << frag.fid() << " " << GD.nodes()[node_u] << " " << v_data << " " << node_u << " " << node_v << endl;
         boost::trim_right(v_data);
         v_word_vector.clear();
         Reader::calculate_word_vector(word_embedding,v_data,v_word_vector);
 
         score = cosine_similarity(u_word_vector,v_word_vector);
-        //cout << score << endl;
         if(score >= sigma){
           //cout << score << " " <<  frag.fid() << " " <<  node_u << " " << node_v << endl;
           matched_pairs.push_back(make_pair(node_u,node_v));
         }
       }
     }
-
 
     for(pair<int,int> u_prime_and_v_prime : matched_pairs){
       if(cache.find(u_prime_and_v_prime) != cache.end()){
@@ -200,6 +189,7 @@ class ParaMatch {
     cache[make_pair(u,v)].first = false;
     cache[make_pair(u,v)].second.clear();
 
+
     for(auto u_p_v_p : cache){
       auto it = find_if(u_p_v_p.second.second.begin(),u_p_v_p.second.second.end(),
                         [&u,&v](std::pair<int,int> el){
@@ -215,6 +205,8 @@ class ParaMatch {
     return false;
 
   };
+
+
   bool match(const Graph &GD, const FRAG_T& frag,
                         vector<vector<pair<int,string>>> &g_paths,vector<vector<int>> &g_descendants,
                         unordered_map<string,vector<double>> &word_embedding,  const int &u, const int &v, const double &sigma,

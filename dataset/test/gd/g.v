@@ -1,3 +1,3 @@
 0 nothing
-1 print man
+1 print
 2 yes

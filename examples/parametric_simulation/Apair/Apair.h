@@ -31,7 +31,6 @@ void PEval(const fragment_t& frag, context_t& ctx,
   auto &match_set = ctx.match_set;
   auto &C = ctx.C;
   auto &GD = ctx.GD;
-  auto &u = ctx.u;
   auto &cache = ctx.cache;
   auto &ecache_u = ctx.ecache_u;
   auto &ecache_v = ctx.ecache_v;
@@ -44,19 +43,25 @@ void PEval(const fragment_t& frag, context_t& ctx,
   pointVec points;
   auto inner_vert = frag.InnerVertices();
   for (auto v : inner_vert ) {
-    string v_str = "";//frag.GetData(v);
+    string v_str = frag.GetData(v);
+    //auto oid = frag.Gid2Oid(frag.Vertex2Gid(v));
+    //cout << frag.fid() << " " << oid  << " " << v_str << endl;
     vector<double> v_g_word_vector;
+    boost::trim_right(v_str);
     Reader::calculate_word_vector(ctx.word_embeddings,v_str,v_g_word_vector);
     if(!v_g_word_vector.empty()){
       auto oid = frag.Gid2Oid(frag.Vertex2Gid(v));
       point_t t = make_pair(oid,v_g_word_vector);
       points.push_back(t);
+      //cout << v_str <<  " " << oid << endl;
+
     }
   }
 
   KDTree tree(points);
 
   for(int u_t = 0; u_t < GD.number_of_nodes(); u_t++){
+    //cout << frag.fid() << " " <<  u_t << endl;
     if(!GD.nodes()[u_t].empty()){
       vector<double> u_t_word_vector;
       Reader::calculate_word_vector(word_embeddings,GD.nodes()[u_t],u_t_word_vector);
@@ -67,6 +72,7 @@ void PEval(const fragment_t& frag, context_t& ctx,
           //vertex_t v(returned_match.first);
           //auto es = frag.GetOutgoingAdjList(v);
           C.push_back(make_pair(u_t,make_pair(returned_match.first,5)));
+          //cout << frag.fid() << " " <<  u_t << " " << returned_match.first << endl;
         }
       }
     }
@@ -82,19 +88,26 @@ void PEval(const fragment_t& frag, context_t& ctx,
     return a.second.second < b.second.second;
   });
 
-
   bool match = false;
   for(auto v : C){
-    auto it = ctx.cache.find(make_pair(u,v.first));
-    if(it != ctx.cache.end() && ctx.cache[make_pair(u,v.first)].first )
-      ctx.match_set.push_back(v.first);
+    //cout << frag.fid() << " ) " << " " << v.first << " " << v.second.first << endl;
+    auto it = cache.find(make_pair(v.first,v.second.first));
+    if(it != ctx.cache.end() && cache[make_pair(v.first,v.second.first)].first  ){
+      match_set.push_back(make_pair(v.first,v.second.first));
+      //cout << " here " << v.first<< " " << v.second.first << endl;
+    }
     else{
       ParaMatch<FRAG_T> p;
-      match = p.match_pair(GD,frag,g_paths,g_descendants,u,v.first,sigma,delta,cache,word_embeddings,ecache_u,ecache_v);
+      match = p.match_pair(GD,frag,g_paths,g_descendants,v.first,v.second.first,sigma,delta,cache,word_embeddings,ecache_u,ecache_v);
       if(match)
-        match_set.push_back(v.first);
+        match_set.push_back(make_pair(v.first,v.second.first));
     }
 
+  }
+
+
+  for(auto matched_vertices : match_set){
+    cout << frag.fid() << " --> " <<  matched_vertices.first << " " << matched_vertices.second << endl;
   }
 
 }
