@@ -41,6 +41,7 @@ void Reader::read_word_vector(string folder, unordered_map<string,vector<double>
 void Reader::calculate_word_vector(unordered_map<string,vector<double>> &word_embeddings,string word,
                                    vector<double> &v_g_word_vector)
 {
+
   vector<string> each_word;
   boost::split(each_word, word, boost::is_any_of(" "));
   unsigned int cnt = 0;
@@ -58,12 +59,13 @@ void Reader::calculate_word_vector(unordered_map<string,vector<double>> &word_em
       }
     }
   }
-  /*if(v_g_word_vector.empty()) return;
-  cnt = each_word.size();
-  transform(v_g_word_vector.begin(), v_g_word_vector.end(), v_g_word_vector.begin(), [cnt](double &c){ return c/cnt; });*/
+  return;
+  //if(v_g_word_vector.empty()) return;
+  //cnt = each_word.size();
+  //transform(v_g_word_vector.begin(), v_g_word_vector.end(), v_g_word_vector.begin(), [cnt](double &c){ return c/cnt; });
 
   //if (v_g_word_vector.empty()) return;
-  if (each_word.size() != cnt){
+  /*if (each_word.size() != cnt){
     vector<double> rand_vector (word_embeddings.begin()->second.size(),0);
     srand(time(0));
     generate(rand_vector.begin(), rand_vector.end(), rand);
@@ -78,5 +80,5 @@ void Reader::calculate_word_vector(unordered_map<string,vector<double>> &word_em
     transform(v_g_word_vector.begin(), v_g_word_vector.end(), v_g_word_vector.begin(), [size](double &c){ return c/size; });
   }else{
     transform(v_g_word_vector.begin(), v_g_word_vector.end(), v_g_word_vector.begin(), [cnt](double &c){ return c/cnt; });
-  }
+  }*/
 }

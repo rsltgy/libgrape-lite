@@ -39,7 +39,6 @@ int main(int argc, char* argv[]) {
 
   std::string name = FLAGS_application;
   if(name == "Spair" || name == "Vpair" || name == "Apair") {
-    cout << "spair" << endl;
     grape::Run<unsigned int, unsigned int, string , string>();
   }
 

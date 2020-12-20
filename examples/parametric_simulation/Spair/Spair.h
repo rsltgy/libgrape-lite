@@ -44,7 +44,7 @@ class Spair : public ParallelAppBase<FRAG_T, SpairContext<FRAG_T>>,
     int u = ctx.u;
     int v = ctx.v;
     double  sigma = 0.8;
-    double delta = 0.0;
+    double delta = 0.2;
     ParaMatch<FRAG_T> p;
     bool res = p.match(ctx.GD,frag,ctx.g_paths,ctx.g_descendants,ctx.word_embeddings,u,v,sigma,delta);
     cout << frag.fid() << " " << res  << endl;

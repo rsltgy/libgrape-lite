@@ -14,6 +14,7 @@
 #include "../Util/Reader.h"
 #include "grape/grape.h"
 #include <boost/functional/hash.hpp>
+#include <boost/algorithm/string.hpp>
 
 
 using namespace std;
@@ -33,7 +34,7 @@ class ParaMatch {
                     unordered_map<string,vector<double>> &word_embedding, const int &u, const int &v,
                     const double &sigma, const double &delta);*/
 
-  inline double cosine_similarity(vector<double> &A, vector<double> &B ){
+  inline double cosine_similarity(const vector<double> &A, const vector<double> &B ){
 
     if (A.empty() || B.empty())
       return 0;
@@ -65,6 +66,7 @@ class ParaMatch {
 
     vector<pair<int,string>> paths_of_v = g_paths[v];
     string path_string_v;
+    return_if_not_found_a_match = true;
     for(pair<int,string> path : paths_of_v){
       if(path.first == v_prime){
         path_string_v = path.second;
@@ -73,6 +75,7 @@ class ParaMatch {
       }
     }
     if (return_if_not_found_a_match) return 0;
+
 
     vector<double> u_word_vector;
     Reader::calculate_word_vector(word_embeddings,path_string_u,u_word_vector);
@@ -100,20 +103,21 @@ class ParaMatch {
     unsigned int a = frag.Vertex2Gid(v1);
     string v_data;
     if (a <= 100000000){
-      cout << frag.fid() <<  frag.GetData((vertex_t)a) << endl;
+      //cout << frag.fid() << " found vertex " << v << " and its data is " <<  frag.GetData((vertex_t)a) << endl;
       v_data = frag.GetData((vertex_t)a);
     }
     else{
-      cout << frag.fid() << " could not find " << v << endl;
+      //cout << frag.fid() << " could not find vertex " << v << endl;
       return false;
     }
 
     vector<double> v_word_vector;
+    boost::trim_right(v_data);
     Reader::calculate_word_vector(word_embedding,v_data,v_word_vector);
 
     double score = cosine_similarity(u_word_vector,v_word_vector);
-
-    if(score <= sigma){          // if the label of node u and v do not match then return false
+    //cout <<  " score of " << u << " and " << v << " is" << score << endl;
+    if(score <= sigma){                         // if the label of node u and v do not match then return false
       cache[make_pair(u,v)].first = false;
       cache[make_pair(u,v)].second.clear();
       return false;
@@ -145,22 +149,23 @@ class ParaMatch {
     //Find all matching pairs of descendants of u and v;
 
     for(int node_u : v_u_k){
+      u_word_vector.clear();
+      Reader::calculate_word_vector(word_embedding,GD.nodes()[node_u],u_word_vector);
       for(int node_v : v_v_k){
-
-        Reader::calculate_word_vector(word_embedding,GD.nodes()[node_u],u_word_vector);
-
         vertex_t node_v_(node_v);
         a = frag.Vertex2Gid(node_v_);
         if (a <= 100000000){
-          //cout << frag.fid() <<  frag.GetData((vertex_t)a) << endl;
           v_data = frag.GetData((vertex_t)a);
         }
-
+        //cout << frag.fid() << " " << GD.nodes()[node_u] << " " << v_data << " " << node_u << " " << node_v << endl;
+        boost::trim_right(v_data);
+        v_word_vector.clear();
         Reader::calculate_word_vector(word_embedding,v_data,v_word_vector);
 
         score = cosine_similarity(u_word_vector,v_word_vector);
-
+        //cout << score << endl;
         if(score >= sigma){
+          //cout << score << " " <<  frag.fid() << " " <<  node_u << " " << node_v << endl;
           matched_pairs.push_back(make_pair(node_u,node_v));
         }
       }
@@ -168,7 +173,6 @@ class ParaMatch {
 
 
     for(pair<int,int> u_prime_and_v_prime : matched_pairs){
-
       if(cache.find(u_prime_and_v_prime) != cache.end()){
         match = cache[u_prime_and_v_prime].first;
       }
@@ -178,6 +182,7 @@ class ParaMatch {
       if(match){
         sum += calculate_path_similarity(GD,g_paths,word_embedding, u, u_prime_and_v_prime.first, v, u_prime_and_v_prime.second);
         cache[make_pair(u,v)].second.push_back(u_prime_and_v_prime);
+        //cout << "sum is " << sum << " " << u_prime_and_v_prime.first << " " <<  u_prime_and_v_prime.second << endl;
         if (sum >= delta){
           cache[make_pair(u,v)].first = true;
           return true;
@@ -191,7 +196,6 @@ class ParaMatch {
     /*if (sum >= delta){
         return true;
     }*/
-
 
     cache[make_pair(u,v)].first = false;
     cache[make_pair(u,v)].second.clear();
@@ -207,7 +211,6 @@ class ParaMatch {
         u_p_v_p.second.first = false;
         ParaMatch::match_pair(GD,frag,g_paths,g_descendants,u_p_v_p.first.first,u_p_v_p.first.second,sigma,delta,cache,word_embedding,ecache_u,ecache_v);
       }
-
     }
     return false;
 

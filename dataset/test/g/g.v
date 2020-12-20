@@ -1,7 +1,7 @@
 0 nothing
 1 come
-2 here
-3 yes
+2 yes
+3 global
 4 global
 5 world
 6 print man

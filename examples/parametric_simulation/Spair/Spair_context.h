@@ -47,6 +47,7 @@ class SpairContext : public VertexDataContext<FRAG_T, double> {
           max_vertex_number = to;
       }
     }
+
     d_file.close();
     for(int i = 0; i < max_vertex_number; i++){
       g_paths.push_back(vector<pair<int,string>>());
@@ -61,7 +62,7 @@ class SpairContext : public VertexDataContext<FRAG_T, double> {
         path_string += " " + temp_string;
 
       g_descendants_[from].push_back(to);
-      if(g_paths_[from].size() >= 5) continue;
+      if(g_paths_[from].size() >= 100) continue;
       g_paths_[from].push_back(make_pair(to,path_string));
     }
     d_file.close();

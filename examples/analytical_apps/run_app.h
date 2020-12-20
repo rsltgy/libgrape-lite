@@ -275,7 +275,6 @@ void Run() {
       CreateAndQuery<GraphType, AppType>(comm_spec, efile, vfile, out_prefix,
                                          fnum, spec);
     } else if(name == "Spair"){
-      cout << "create" << endl;
       using GraphType = ImmutableEdgecutFragment<unsigned int, unsigned int, string, string,
           LoadStrategy::kOnlyOut>;
       using AppType = Spair<GraphType>;
