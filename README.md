@@ -74,6 +74,9 @@ mpirun -n 4 ./run_app --vfile ../dataset/p2p-31.v --efile ../dataset/p2p-31.e --
 # HOSTFILE provides a list of hosts where MPI processes are launched. 
 mpirun -n 4 -hostfile HOSTFILE ./run_app --application=wcc --vfile ../dataset/p2p-31.v --efile ../dataset/p2p-31.e --out_prefix ./output_wcc
 
+#run spair, vpair or apair parametric simulation
+-n 2 ./run_app --vfile ../dataset/test/g/g.v --efile ../dataset/test/g/g.e --g_pathfile ../dataset/test/g/path.txt --gd_evfile ../dataset/test/gd/ --gd_pathfile ../dataset/test/gd/path.txt --path_we ../dataset/glove.twitter.27B.25d.txt --vertex_u 0 --vertex_v 0 --sigma 0.95 --delta 1.2 --application Spair --out_prefix ./output_spair --directed
+
 # see more flags info.
 ./run_app --help
 ```
