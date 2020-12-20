@@ -24,7 +24,12 @@ DECLARE_string(efile);
 DECLARE_string(vfile);
 DECLARE_string(out_prefix);
 DECLARE_string(jobid);
-
+DECLARE_string(path_we);
+DECLARE_string(gd_evfile);
+DECLARE_string(g_pathfile);
+DECLARE_string(gd_pathfile);
+DECLARE_int64(vertex_u);
+DECLARE_int64(vertex_v);
 DECLARE_int64(bfs_source);
 DECLARE_int64(sssp_source);
 DECLARE_double(pr_d);
@@ -40,5 +45,6 @@ DECLARE_bool(deserialize);
 DECLARE_string(serialization_prefix);
 
 DECLARE_int32(app_concurrency);
+
 
 #endif  // EXAMPLES_ANALYTICAL_APPS_FLAGS_H_

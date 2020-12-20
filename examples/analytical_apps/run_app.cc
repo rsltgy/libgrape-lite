@@ -38,12 +38,9 @@ int main(int argc, char* argv[]) {
   grape::Init();
 
   std::string name = FLAGS_application;
-  if (name.find("sssp") != std::string::npos) {
-    grape::Run<int64_t, uint32_t, grape::EmptyType, double>();
-  } if(name.find("spair") != std::string::npos) {
-    grape::Run<int64_t, uint32_t, std::string, std::string>();
-  }else {
-    grape::Run<int64_t, uint32_t, grape::EmptyType, grape::EmptyType>();
+  if(name == "Spair" || name == "Vpair" || name == "Apair") {
+    cout << "spair" << endl;
+    grape::Run<unsigned int, unsigned int, string , string>();
   }
 
   grape::Finalize();

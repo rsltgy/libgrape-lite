@@ -38,10 +38,14 @@ limitations under the License.
 #include "thirdparty/atlarge-research-granula/granula.hpp"
 #endif
 
+#include "../parametric_simulation/Spair/Spair.h"
 #include "bfs/bfs.h"
 #include "bfs/bfs_auto.h"
 #include "cdlp/cdlp.h"
 #include "cdlp/cdlp_auto.h"
+#include "examples/parametric_simulation/Spair/Spair.h"
+#include "examples/parametric_simulation/Vpair/Vpair.h"
+#include "examples/parametric_simulation/Apair/Apair.h"
 #include "flags.h"
 #include "lcc/lcc.h"
 #include "lcc/lcc_auto.h"
@@ -55,8 +59,8 @@ limitations under the License.
 #include "timer.h"
 #include "wcc/wcc.h"
 #include "wcc/wcc_auto.h"
-#include "examples/parametric_simulation/spair/spair.h"
-#include "../parametric_simulation/spair/spair.h"
+
+using namespace std;
 
 namespace grape {
 
@@ -88,8 +92,8 @@ void Finalize() {
 }
 
 template <typename FRAG_T, typename APP_T, typename... Args>
-void CreateAndQuery(const CommSpec& comm_spec, const std::string efile,
-                    const std::string& vfile, const std::string& out_prefix,
+void CreateAndQuery(const CommSpec& comm_spec, const string efile,
+                    const string& vfile, const string& out_prefix,
                     int fnum, const ParallelEngineSpec& spec, Args... args) {
   timer_next("load graph");
   LoadGraphSpec graph_spec = DefaultLoadGraphSpec();
@@ -100,7 +104,7 @@ void CreateAndQuery(const CommSpec& comm_spec, const std::string efile,
   } else if (FLAGS_serialize) {
     graph_spec.set_serialize(true, FLAGS_serialization_prefix);
   }
-  std::shared_ptr<FRAG_T> fragment;
+  shared_ptr<FRAG_T> fragment;
   if (FLAGS_segmented_partition) {
     fragment = LoadGraph<FRAG_T, SegmentedPartitioner<typename FRAG_T::oid_t>>(
         efile, vfile, comm_spec, graph_spec);
@@ -108,16 +112,16 @@ void CreateAndQuery(const CommSpec& comm_spec, const std::string efile,
     fragment = LoadGraph<FRAG_T, HashPartitioner<typename FRAG_T::oid_t>>(
         efile, vfile, comm_spec, graph_spec);
   }
-  auto app = std::make_shared<APP_T>();
+  auto app = make_shared<APP_T>();
   timer_next("load application");
   auto worker = APP_T::CreateWorker(app, fragment);
   worker->Init(comm_spec, spec);
   timer_next("run algorithm");
-  worker->Query(std::forward<Args>(args)...);
+  worker->Query(forward<Args>(args)...);
   timer_next("print output");
 
-  std::ofstream ostream;
-  std::string output_path =
+  ofstream ostream;
+  string output_path =
       grape::GetResultFilename(out_prefix, fragment->fid());
   ostream.open(output_path);
   worker->Output(ostream);
@@ -135,15 +139,15 @@ void Run() {
   bool is_coordinator = comm_spec.worker_id() == kCoordinatorRank;
   timer_start(is_coordinator);
 #ifdef GRANULA
-  std::string job_id = FLAGS_jobid;
+  string job_id = FLAGS_jobid;
   granula::startMonitorProcess(getpid());
   granula::operation grapeJob("grape", "Id.Unique", "Job", "Id.Unique");
   granula::operation loadGraph("grape", "Id.Unique", "LoadGraph", "Id.Unique");
   if (comm_spec.worker_id() == kCoordinatorRank) {
-    std::cout << grapeJob.getOperationInfo("StartTime", grapeJob.getEpoch())
-              << std::endl;
-    std::cout << loadGraph.getOperationInfo("StartTime", loadGraph.getEpoch())
-              << std::endl;
+    cout << grapeJob.getOperationInfo("StartTime", grapeJob.getEpoch())
+              << endl;
+    cout << loadGraph.getOperationInfo("StartTime", loadGraph.getEpoch())
+              << endl;
   }
 
   granula::linkNode(job_id);
@@ -152,14 +156,19 @@ void Run() {
 
 #ifdef GRANULA
   if (comm_spec.worker_id() == kCoordinatorRank) {
-    std::cout << loadGraph.getOperationInfo("EndTime", loadGraph.getEpoch())
-              << std::endl;
+    cout << loadGraph.getOperationInfo("EndTime", loadGraph.getEpoch())
+              << endl;
   }
 #endif
   // FIXME: no barrier apps. more manager? or use a dynamic-cast.
-  std::string efile = FLAGS_efile;
-  std::string vfile = FLAGS_vfile;
-  std::string out_prefix = FLAGS_out_prefix;
+  string efile = FLAGS_efile;
+  string vfile = FLAGS_vfile;
+  string path_we = FLAGS_path_we;
+  string gd_evfile = FLAGS_gd_evfile;
+  string g_pathfile = FLAGS_g_pathfile;
+  string gd_pathfile = FLAGS_gd_pathfile;
+
+  string out_prefix = FLAGS_out_prefix;
   auto spec = DefaultParallelEngineSpec();
   if (FLAGS_app_concurrency != -1) {
     spec.thread_num = FLAGS_app_concurrency;
@@ -167,8 +176,8 @@ void Run() {
     spec = MultiProcessSpec(comm_spec, false);
   }
   int fnum = comm_spec.fnum();
-  std::string name = FLAGS_application;
-  if (name.find("sssp") != std::string::npos) {
+  string name = FLAGS_application;
+  if (name.find("sssp") != string::npos) {
     using GraphType = ImmutableEdgecutFragment<OID_T, VID_T, VDATA_T, double>;
     if (name == "sssp_auto") {
       using AppType = SSSPAuto<GraphType>;
@@ -265,12 +274,30 @@ void Run() {
       using AppType = LCC<GraphType>;
       CreateAndQuery<GraphType, AppType>(comm_spec, efile, vfile, out_prefix,
                                          fnum, spec);
-    } else if(name == "spair"){
-      using GraphType = ImmutableEdgecutFragment<OID_T, VID_T, VDATA_T, EDATA_T,
-          LoadStrategy::kBothOutIn>;
+    } else if(name == "Spair"){
+      cout << "create" << endl;
+      using GraphType = ImmutableEdgecutFragment<unsigned int, unsigned int, string, string,
+          LoadStrategy::kOnlyOut>;
       using AppType = Spair<GraphType>;
-      CreateAndQuery<GraphType, AppType, int>(
-          comm_spec, efile, vfile, out_prefix, fnum, spec, FLAGS_cdlp_mr);
+      CreateAndQuery<GraphType, AppType, string>(
+          comm_spec, efile, vfile, out_prefix, fnum, spec, path_we,gd_evfile,
+          g_pathfile,gd_pathfile,FLAGS_vertex_u,FLAGS_vertex_v);
+
+    }else if(name == "Vpair"){
+      using GraphType = ImmutableEdgecutFragment<OID_T, VID_T, VDATA_T, EDATA_T,
+          LoadStrategy::kOnlyOut>;
+      using AppType = Vpair<GraphType>;
+      CreateAndQuery<GraphType, AppType, string>(
+          comm_spec, efile, vfile, out_prefix, fnum, spec, path_we,gd_evfile,
+          g_pathfile,gd_pathfile,FLAGS_vertex_u,FLAGS_vertex_v);
+
+    }else if(name == "Apair"){
+      using GraphType = ImmutableEdgecutFragment<OID_T, VID_T, VDATA_T, EDATA_T,
+          LoadStrategy::kOnlyOut>;
+      using AppType = Apair<GraphType>;
+      CreateAndQuery<GraphType, AppType, string>(
+          comm_spec, efile, vfile, out_prefix, fnum, spec, path_we,gd_evfile,
+          g_pathfile,gd_pathfile,FLAGS_vertex_u,FLAGS_vertex_v);
 
     }else {
       LOG(FATAL) << "No avaiable application named [" << name << "].";
@@ -283,12 +310,12 @@ void Run() {
 
 #ifdef GRANULA
   if (comm_spec.worker_id() == kCoordinatorRank) {
-    std::cout << offloadGraph.getOperationInfo("StartTime",
+    cout << offloadGraph.getOperationInfo("StartTime",
                                                offloadGraph.getEpoch())
-              << std::endl;
+              << endl;
 
-    std::cout << grapeJob.getOperationInfo("EndTime", grapeJob.getEpoch())
-              << std::endl;
+    cout << grapeJob.getOperationInfo("EndTime", grapeJob.getEpoch())
+              << endl;
   }
 
   granula::stopMonitorProcess(getpid());

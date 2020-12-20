@@ -21,8 +21,16 @@ limitations under the License.
 DEFINE_string(application, "", "application name");
 DEFINE_string(efile, "", "edge file");
 DEFINE_string(vfile, "", "vertex file");
+DEFINE_string(g_pathfile, "", "g path file");
 DEFINE_string(out_prefix, "", "output directory of results");
 DEFINE_string(jobid, "", "jobid, only used in LDBC graphanalytics.");
+DEFINE_string(path_we, "", "Word embedding path");
+DEFINE_string(gd_evfile, "", "gd e and v files");
+DEFINE_int64(vertex_u, 0, "vertex u");
+DEFINE_int64(vertex_v, 0, "vertex u");
+DEFINE_string(gd_pathfile, "", "gd path file");
+
+
 DEFINE_bool(directed, false, "input graph is directed or not.");
 
 /* flags related to specific applications. */

@@ -116,11 +116,11 @@ endif ()
 macro(install_libgrapelite_target target)
     # install
     install(TARGETS ${target}
-        EXPORT libgrapelite-targets
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        RUNTIME DESTINATION bin
-    )
+            EXPORT libgrapelite-targets
+            ARCHIVE DESTINATION lib
+            LIBRARY DESTINATION lib
+            RUNTIME DESTINATION bin
+            )
 endmacro()
 
 # ------------------------------------------------------------------------------
@@ -143,7 +143,7 @@ if (NOT GFLAGS_FOUND)
     message(WARNING "Disable analytical_apps because gflags not found")
 else ()
     add_executable(analytical_apps examples/analytical_apps/flags.cc
-            examples/analytical_apps/run_app.cc examples/parametric_simulation/run_spair.cc)
+            examples/analytical_apps/run_app.cc examples/parametric_simulation/run_spair.cc examples/parametric_simulation/Util/Reader.cpp examples/parametric_simulation/Util/Reader.h examples/parametric_simulation/ParaMatch/ParaMatch.h examples/parametric_simulation/Graph/Graph.cpp examples/parametric_simulation/Graph/Graph.h examples/parametric_simulation/Graph/Edge.cpp examples/parametric_simulation/Graph/Edge.h examples/parametric_simulation/Vpair/Vpair.h examples/parametric_simulation/Vpair/Vpair_context.h examples/parametric_simulation/Apair/Apair.h examples/parametric_simulation/Apair/Apair_context.h examples/parametric_simulation/KDTree/KDTree.h examples/parametric_simulation/KDTree/KDTree.cpp)
     target_include_directories(analytical_apps PRIVATE
             examples/analytical_apps)
     set_target_properties(analytical_apps PROPERTIES OUTPUT_NAME run_app)
@@ -173,7 +173,7 @@ if (NOT GFLAGS_FOUND)
 else ()
     add_executable(parametric_simulation examples/parametric_simulation/run_spair.cc)
     target_include_directories(parametric_simulation PRIVATE
-            examples/parametric_simulation/spair)
+            examples/parametric_simulation/Spair)
     set_target_properties(parametric_simulation PROPERTIES OUTPUT_NAME run_spair)
     target_link_libraries(parametric_simulation grape-lite ${MPI_CXX_LIBRARIES}
             ${GLOG_LIBRARIES} ${GFLAGS_LIBRARIES} ${CMAKE_DL_LIBS})
@@ -183,37 +183,37 @@ endif ()
 
 
 if (PROFILING)
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/thirdparty/atlarge-research-granula
-        DESTINATION include # target directory
-        FILES_MATCHING      # install only matched files
-        PATTERN "*.h"       # select header files
-)        
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/thirdparty/atlarge-research-granula
+            DESTINATION include # target directory
+            FILES_MATCHING      # install only matched files
+            PATTERN "*.h"       # select header files
+            )
 endif()
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/thirdparty/flat_hash_map
         DESTINATION include
         FILES_MATCHING
         PATTERN "*.h"
-)
+        )
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/grape
         DESTINATION include
         FILES_MATCHING
         PATTERN "*.h"
-)
+        )
 install(DIRECTORY ${EXAMPLES_DIR}/analytical_apps/bfs
-                  ${EXAMPLES_DIR}/analytical_apps/cdlp
-                  ${EXAMPLES_DIR}/analytical_apps/lcc
-                  ${EXAMPLES_DIR}/analytical_apps/pagerank
-                  ${EXAMPLES_DIR}/analytical_apps/sssp
-                  ${EXAMPLES_DIR}/analytical_apps/wcc
+        ${EXAMPLES_DIR}/analytical_apps/cdlp
+        ${EXAMPLES_DIR}/analytical_apps/lcc
+        ${EXAMPLES_DIR}/analytical_apps/pagerank
+        ${EXAMPLES_DIR}/analytical_apps/sssp
+        ${EXAMPLES_DIR}/analytical_apps/wcc
         DESTINATION include/grape/analytical_apps
         FILES_MATCHING
         PATTERN "*.h"
-)
+        )
 install(DIRECTORY ${EXAMPLES_DIR}/gnn_sampler
         DESTINATION include/grape/analytical_apps
         FILES_MATCHING
         PATTERN "*.h"
-)
+        )
 
 install(DIRECTORY ${EXAMPLES_DIR}/parametric_simulation/spair
         DESTINATION include/grape/analytical_apps
@@ -222,19 +222,19 @@ install(DIRECTORY ${EXAMPLES_DIR}/parametric_simulation/spair
         )
 
 configure_file(libgrapelite-config.in.cmake
-               "${PROJECT_BINARY_DIR}/libgrapelite-config.cmake" @ONLY
-)
+        "${PROJECT_BINARY_DIR}/libgrapelite-config.cmake" @ONLY
+        )
 configure_file(libgrapelite-config-version.in.cmake
-               "${PROJECT_BINARY_DIR}/libgrapelite-config-version.cmake" @ONLY
-)
+        "${PROJECT_BINARY_DIR}/libgrapelite-config-version.cmake" @ONLY
+        )
 install(FILES "${PROJECT_BINARY_DIR}/libgrapelite-config.cmake"
-              "${PROJECT_BINARY_DIR}/libgrapelite-config-version.cmake"
+        "${PROJECT_BINARY_DIR}/libgrapelite-config-version.cmake"
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libgrapelite
-)
+        )
 install(EXPORT libgrapelite-targets
         FILE libgrapelite-targets.cmake
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libgrapelite
-)
+        )
 
 # ------------------------------------------------------------------------------
 # format code
@@ -258,7 +258,7 @@ add_custom_target(clformat
 # cpplint, check for readability with Google style
 # ------------------------------------------------------------------------------
 add_custom_target(cpplint
-  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/misc/cpplint.py ${FILES_NEED_FORMAT}
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/misc/cpplint.py ${FILES_NEED_FORMAT}
         COMMENT "Running cpplint check."
         VERBATIM)
 
@@ -271,4 +271,3 @@ if(BUILD_LIBGRAPELITE_DOCS)
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             VERBATIM)
 endif()
-
