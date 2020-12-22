@@ -55,7 +55,7 @@ void PEval(const fragment_t& frag, context_t& ctx,
     //auto oid = frag.Gid2Oid(frag.Vertex2Gid(v));
     //std::cout << frag.fid()  << " " << oid << " " << frag.GetData(v) << std::endl;
     string v_str = frag.GetData(v);
-    //cout << GD.nodes()[u] << " " << v_str << endl;
+    //cout << gd.nodes()[u] << " " << v_str << endl;
     vector<double> v_g_word_vector;
     boost::trim_right(v_str);
     Reader::calculate_word_vector(ctx.word_embeddings,v_str,v_g_word_vector);

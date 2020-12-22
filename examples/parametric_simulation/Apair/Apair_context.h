@@ -72,12 +72,12 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
 
 
   void Init(ParallelMessageManager& messages, string path_of_word_embeddings_,
-            string gd_evfile_, string g_pathfile_, string gd_pathfile_,oid_t u_, oid_t v_,double sigma_,double delta_) {
+            string gd_file_, string g_pathfile_,oid_t u_, oid_t v_,double sigma_,double delta_) {
     auto& frag = this->fragment();
     // Read word embeddings
     Reader::read_word_vector(path_of_word_embeddings_,word_embeddings);
-    // Read Graph GD
-    this->GD.load_from_file(gd_evfile_);
+    // Read Graph gd
+    this->GD.load_from_file(gd_file_);
     this->read_paths(g_pathfile_,g_paths,g_descendants);
     this->u = u_;
     this->sigma = sigma_;

@@ -51,7 +51,7 @@ void Graph::read_paths(Graph &g,const string &location){
       path_string += " " + temp_string;
 
     g.descendants_[from].push_back(to);
-    if(g.paths_[from].size() >= 5) continue;
+    if(g.paths_[from].size() >= 100) continue;
     g.paths_[from].push_back(make_pair(to,path_string));
   }
   d_file.close();
@@ -59,7 +59,6 @@ void Graph::read_paths(Graph &g,const string &location){
 }
 
 void Graph::load_from_file(const string &location){
-
 
   // Read nodes of the graph from specified location
   read_nodes(*this,location + "g.v");
@@ -75,8 +74,6 @@ void Graph::load_from_file(const string &location){
     this->paths_.push_back(vector<pair<int,string>>());
     this->descendants_.push_back(vector<int>());
   }
-
-
 
   // Read each line of the .e file and store in nodes data structure.
   while(getline( e_file,str)){

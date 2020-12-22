@@ -164,9 +164,8 @@ void Run() {
   string efile = FLAGS_efile;
   string vfile = FLAGS_vfile;
   string path_we = FLAGS_path_we;
-  string gd_evfile = FLAGS_gd_evfile;
+  string gd_file = FLAGS_gd_file;
   string g_pathfile = FLAGS_g_pathfile;
-  string gd_pathfile = FLAGS_gd_pathfile;
   double sigma = FLAGS_sigma;
   double delta = FLAGS_delta;
 
@@ -282,24 +281,24 @@ void Run() {
           LoadStrategy::kOnlyOut>;
       using AppType = Spair<GraphType>;
       CreateAndQuery<GraphType, AppType, string>(
-          comm_spec, efile, vfile, out_prefix, fnum, spec, path_we,gd_evfile,
-          g_pathfile,gd_pathfile,FLAGS_vertex_u,FLAGS_vertex_v,sigma,delta);
+          comm_spec, efile, vfile, out_prefix, fnum, spec, path_we,gd_file,
+          g_pathfile,FLAGS_vertex_u,FLAGS_vertex_v,sigma,delta);
 
     }else if(name == "Vpair"){
       using GraphType = ImmutableEdgecutFragment<OID_T, VID_T, VDATA_T, EDATA_T,
           LoadStrategy::kOnlyOut>;
       using AppType = Vpair<GraphType>;
       CreateAndQuery<GraphType, AppType, string>(
-          comm_spec, efile, vfile, out_prefix, fnum, spec, path_we,gd_evfile,
-          g_pathfile,gd_pathfile,FLAGS_vertex_u,FLAGS_vertex_v,sigma,delta);
+          comm_spec, efile, vfile, out_prefix, fnum, spec, path_we,gd_file,
+          g_pathfile,FLAGS_vertex_u,FLAGS_vertex_v,sigma,delta);
 
     }else if(name == "Apair"){
       using GraphType = ImmutableEdgecutFragment<OID_T, VID_T, VDATA_T, EDATA_T,
           LoadStrategy::kOnlyOut>;
       using AppType = Apair<GraphType>;
       CreateAndQuery<GraphType, AppType, string>(
-          comm_spec, efile, vfile, out_prefix, fnum, spec, path_we,gd_evfile,
-          g_pathfile,gd_pathfile,FLAGS_vertex_u,FLAGS_vertex_v,sigma,delta);
+          comm_spec, efile, vfile, out_prefix, fnum, spec, path_we,gd_file,
+          g_pathfile,FLAGS_vertex_u,FLAGS_vertex_v,sigma,delta);
 
     }else {
       LOG(FATAL) << "No avaiable application named [" << name << "].";

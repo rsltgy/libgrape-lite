@@ -24,12 +24,12 @@ class ParaMatch {
   using oid_t = typename FRAG_T::oid_t;
   using vertex_t = typename FRAG_T::vertex_t;
    public:
-  /*static bool match_pair(const Graph &GD,const FRAG_T& frag,
+  /*static bool match_pair(const Graph &gd,const FRAG_T& frag,
                          vector<vector<pair<int,string>>> &g_paths,vector<vector<int>> &g_descendants,
                          const int &u,const int &v,const double &sigma, const double &delta,
                          unordered_map<std::pair<int,int>, pair<bool, vector<std::pair<int,int>>>, pair_hash> &cache,
                          unordered_map<string,vector<double>> &word_embedding, unordered_map<int,vector<int>> &ecache_u,unordered_map<int,vector<int>> &ecache_v);
-  static bool match(const Graph &GD, const FRAG_T& frag,
+  static bool match(const Graph &gd, const FRAG_T& frag,
                     vector<vector<pair<int,string>>> &g_paths,vector<vector<int>> &g_descendants,,
                     unordered_map<string,vector<double>> &word_embedding, const int &u, const int &v,
                     const double &sigma, const double &delta);*/
@@ -51,7 +51,8 @@ class ParaMatch {
                                           vector<vector<pair<int,string>>> &g_paths,
                                           unordered_map<string,vector<double>> &word_embeddings, const int &u, const int &u_prime,const int &v, const int &v_prime){
 
-    // Check the path between u and u_prime: if there is a path take the labels, else return 0
+
+      // Check the path between u and u_prime: if there is a path take the labels, else return 0
     vector<pair<int,string>> paths_of_u = GD.paths()[u];
     string path_string_u;
     bool return_if_not_found_a_match = true;
@@ -68,7 +69,7 @@ class ParaMatch {
     string path_string_v;
     return_if_not_found_a_match = true;
     for(pair<int,string> path : paths_of_v){
-      if(path.first == v_prime){
+        if(path.first == v_prime){
         path_string_v = path.second;
         return_if_not_found_a_match = false;
         break;
@@ -99,7 +100,6 @@ class ParaMatch {
     Reader::calculate_word_vector(word_embedding,GD.nodes()[u],u_word_vector);
 
     vertex_t frag_vert;
-    //cout << u << " --> " << v << " " << endl;
     if (!frag.GetVertex(v,frag_vert)) return false; // if the vertex not in the fragment
     string v_data;
     v_data = frag.GetData((vertex_t)frag_vert);
@@ -109,8 +109,6 @@ class ParaMatch {
     Reader::calculate_word_vector(word_embedding,v_data,v_word_vector);
 
     double score = cosine_similarity(u_word_vector,v_word_vector);
-
-
     if(score <= sigma){                         // if the label of node u and v do not match then return false
       cache[make_pair(u,v)].first = false;
       cache[make_pair(u,v)].second.clear();
@@ -138,7 +136,6 @@ class ParaMatch {
     vector<int> v_v_k = ecache_v[v];
 
     vector<pair<int,int>> matched_pairs;
-
     //Find all matching pairs of descendants of u and v;
 
     for(int node_u : v_u_k){
@@ -154,8 +151,9 @@ class ParaMatch {
         Reader::calculate_word_vector(word_embedding,v_data,v_word_vector);
 
         score = cosine_similarity(u_word_vector,v_word_vector);
+        //cout << score << " score " << endl;
         if(score >= sigma){
-          //cout << score << " " <<  frag.fid() << " " <<  node_u << " " << node_v << endl;
+           //cout << score << " " <<  frag.fid() << " " <<  node_u << " " << node_v << endl;
           matched_pairs.push_back(make_pair(node_u,node_v));
         }
       }
@@ -169,9 +167,10 @@ class ParaMatch {
         match = ParaMatch::match_pair(GD,frag,g_paths,g_descendants,u_prime_and_v_prime.first,u_prime_and_v_prime.second,sigma,delta,cache,word_embedding,ecache_u,ecache_v);
       }
       if(match){
-        sum += calculate_path_similarity(GD,g_paths,word_embedding, u, u_prime_and_v_prime.first, v, u_prime_and_v_prime.second);
+          double local_sum = calculate_path_similarity(GD,g_paths,word_embedding, u, u_prime_and_v_prime.first, v, u_prime_and_v_prime.second);
+        sum += local_sum;
         cache[make_pair(u,v)].second.push_back(u_prime_and_v_prime);
-        //cout << "sum is " << sum << " " << u_prime_and_v_prime.first << " " <<  u_prime_and_v_prime.second << endl;
+        //cout << "sum is " << sum << " " << local_sum << " " << u_prime_and_v_prime.first << " " <<  u_prime_and_v_prime.second << endl;
         if (sum >= delta){
           cache[make_pair(u,v)].first = true;
           return true;

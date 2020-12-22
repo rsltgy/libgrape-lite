@@ -5600,7 +5600,7 @@ _RE_PATTERN_EXPLICIT_MAKEPAIR = re.compile(r'\bmake_pair\s*<')
 def CheckMakePairUsesDeduction(filename, clean_lines, linenum, error):
   """Check that make_pair's template arguments are deduced.
 
-  G++ 4.6 in C++11 mode fails badly if make_pair's template arguments are
+  g++ 4.6 in C++11 mode fails badly if make_pair's template arguments are
   specified explicitly, and such use isn't intended in any case.
 
   Args:
