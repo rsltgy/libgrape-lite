@@ -3,10 +3,10 @@
 2 yes
 3 global
 4 global
-5 world
-6 print man
+5 reseul
+6 print
 7 nothing
-8 print
+8 world
 9 yes
 10 nothing
 11 yes

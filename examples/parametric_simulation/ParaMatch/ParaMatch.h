@@ -96,25 +96,29 @@ class ParaMatch {
                              unordered_map<std::pair<int,int>, pair<bool, vector<std::pair<int,int>>>, boost::hash<std::pair<int,int>>> &cache,
                              unordered_map<string,vector<double>> &word_embedding, unordered_map<int,vector<int>> &ecache_u,unordered_map<int,vector<int>> &ecache_v){
 
+    cout << "Calling (" << u << "," << v << ")" << endl;
     vector<double> u_word_vector;
     Reader::calculate_word_vector(word_embedding,GD.nodes()[u],u_word_vector);
-
     vertex_t frag_vert;
-    if (!frag.GetVertex(v,frag_vert)) return false; // if the vertex not in the fragment
+    //return false; // if the vertex v is not in the fragment return false directly
+    if(!frag.GetInnerVertex(v,frag_vert))
+    {
+        cout << " node " << v << " returning false " << endl;
+        cache[make_pair(u,v)].first = false;
+        cache[make_pair(u,v)].second.clear();
+        return false;
+    }
     string v_data;
     v_data = frag.GetData((vertex_t)frag_vert);
-
     vector<double> v_word_vector;
     boost::trim_right(v_data);
     Reader::calculate_word_vector(word_embedding,v_data,v_word_vector);
-
     double score = cosine_similarity(u_word_vector,v_word_vector);
     if(score <= sigma){                         // if the label of node u and v do not match then return false
       cache[make_pair(u,v)].first = false;
       cache[make_pair(u,v)].second.clear();
       return false;
     }
-
     if(GD.out_edges()[u].empty()){              // if node u is a leaf then return true
       cache[make_pair(u,v)].first = true;
       cache[make_pair(u,v)].second.clear();
@@ -123,27 +127,26 @@ class ParaMatch {
     if(ecache_u.find(u) == ecache_u.end()){
       ecache_u[u] = GD.descendants()[u];
     }
-
     if(ecache_v.find(v) == ecache_v.end()){
       ecache_v[v] = g_descendants[v];
     }
-
     cache[make_pair(u,v)].first = true;
     double sum = 0;
     bool match = false;
-
     vector<int> v_u_k = ecache_u[u];
     vector<int> v_v_k = ecache_v[v];
 
     vector<pair<int,int>> matched_pairs;
     //Find all matching pairs of descendants of u and v;
-
     for(int node_u : v_u_k){
       u_word_vector.clear();
       Reader::calculate_word_vector(word_embedding,GD.nodes()[node_u],u_word_vector);
       for(int node_v : v_v_k){
         vertex_t frag_vert;
-        if (!frag.GetVertex(node_v,frag_vert)) return false; // if the vertex not in the fragment
+        if (!frag.GetInnerVertex(node_v,frag_vert)) {
+            //cache[make_pair(node_u,node_v)].first = true;
+            continue; // if the vertex not in the fragment assume its a match
+        }
         v_data = frag.GetData((vertex_t)frag_vert);
         //cout << frag.fid() << " " << GD.nodes()[node_u] << " " << v_data << " " << node_u << " " << node_v << endl;
         boost::trim_right(v_data);
@@ -151,33 +154,33 @@ class ParaMatch {
         Reader::calculate_word_vector(word_embedding,v_data,v_word_vector);
 
         score = cosine_similarity(u_word_vector,v_word_vector);
-        //cout << score << " score " << endl;
         if(score >= sigma){
-           //cout << score << " " <<  frag.fid() << " " <<  node_u << " " << node_v << endl;
+          //cout << score << " " <<  frag.fid() << " " <<  node_u << " " << node_v << endl;
           matched_pairs.push_back(make_pair(node_u,node_v));
         }
       }
     }
-
     for(pair<int,int> u_prime_and_v_prime : matched_pairs){
       if(cache.find(u_prime_and_v_prime) != cache.end()){
         match = cache[u_prime_and_v_prime].first;
+        //cout << "Returned for (" << u_prime_and_v_prime.first << "," << u_prime_and_v_prime.second << ")"<< endl;
       }
       else{
         match = ParaMatch::match_pair(GD,frag,g_paths,g_descendants,u_prime_and_v_prime.first,u_prime_and_v_prime.second,sigma,delta,cache,word_embedding,ecache_u,ecache_v);
+        //cout <<  "(" << u_prime_and_v_prime.first << "," << u_prime_and_v_prime.second << ") --> " << match << endl;
       }
       if(match){
-          double local_sum = calculate_path_similarity(GD,g_paths,word_embedding, u, u_prime_and_v_prime.first, v, u_prime_and_v_prime.second);
+        double local_sum = calculate_path_similarity(GD,g_paths,word_embedding, u, u_prime_and_v_prime.first, v, u_prime_and_v_prime.second);
         sum += local_sum;
         cache[make_pair(u,v)].second.push_back(u_prime_and_v_prime);
-        //cout << "sum is " << sum << " " << local_sum << " " << u_prime_and_v_prime.first << " " <<  u_prime_and_v_prime.second << endl;
+        //cout << "sum of path is " << sum << " " << local_sum << " " << u_prime_and_v_prime.first << " " <<  u_prime_and_v_prime.second << endl;
         if (sum >= delta){
-          cache[make_pair(u,v)].first = true;
+            //cout <<  "(" << u_prime_and_v_prime.first << "," << u_prime_and_v_prime.second << ") ---> " << sum << endl;
+            cache[make_pair(u,v)].first = true;
           return true;
         }
         //break;
       }
-
     }
 
     // If we want all entity pairs with all descendants do not return in the loop.
@@ -186,10 +189,8 @@ class ParaMatch {
     }*/
 
     cache[make_pair(u,v)].first = false;
-    cache[make_pair(u,v)].second.clear();
 
-
-    for(auto u_p_v_p : cache){
+    /*for(auto u_p_v_p : cache){
       auto it = find_if(u_p_v_p.second.second.begin(),u_p_v_p.second.second.end(),
                         [&u,&v](std::pair<int,int> el){
                           return u == el.first && v == el.second;
@@ -200,7 +201,8 @@ class ParaMatch {
         u_p_v_p.second.first = false;
         ParaMatch::match_pair(GD,frag,g_paths,g_descendants,u_p_v_p.first.first,u_p_v_p.first.second,sigma,delta,cache,word_embedding,ecache_u,ecache_v);
       }
-    }
+    }*/
+
     return false;
 
   };

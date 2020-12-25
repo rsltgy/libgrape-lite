@@ -96,6 +96,13 @@ class SpairContext : public VertexDataContext<FRAG_T, double> {
 
   void Output(std::ostream& os) override {
 
+      if(result){
+          //cout << u << " " << v << " is a match" <<  std::endl;
+          os << u << " " << v << " is a match" <<  std::endl;
+      }else{
+          //cout << u << " " << v << " is NOT a match" <<  std::endl;
+          os << u << " " << v << " is NOT a match"  <<  std::endl;
+      }
 
 #ifdef PROFILING
     VLOG(2) << "preprocess_time: " << preprocess_time << "s.";
@@ -111,10 +118,13 @@ class SpairContext : public VertexDataContext<FRAG_T, double> {
   unordered_map<string,vector<double>> word_embeddings;
   vector<vector<pair<int,string>>> g_paths;
   vector<vector<int>> g_descendants;
-  double sigma,delta;
-
+  double sigma,delta,sum;
+  bool result = false;
+  unordered_map<std::pair<int,int>, pair<bool, vector<std::pair<int,int>>>, boost::hash<std::pair<int,int>>> cache;
+  unordered_map<int,vector<int>> ecache_u, ecache_v;
   Graph GD;
   DenseVertexSet<vid_t> curr_modified, next_modified;
+
 
 #ifdef PROFILING
   double preprocess_time = 0;

@@ -3,7 +3,8 @@
 0 3 date
 0 4 job
 0 5 age
-0 6 hello mate
+0 6 hello
+0 8 hello
 7 8 hello
 7 9 come
 10 11 come

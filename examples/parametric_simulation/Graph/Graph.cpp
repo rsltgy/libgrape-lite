@@ -49,7 +49,6 @@ void Graph::read_paths(Graph &g,const string &location){
     ss >> from >> to >> path_string;   // Read id and following descendant id and path string
     while(ss >> temp_string)           // if there is more edge label, read them
       path_string += " " + temp_string;
-
     g.descendants_[from].push_back(to);
     if(g.paths_[from].size() >= 100) continue;
     g.paths_[from].push_back(make_pair(to,path_string));
