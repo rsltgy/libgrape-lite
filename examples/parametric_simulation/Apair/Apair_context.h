@@ -98,6 +98,10 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
   void Output(std::ostream& os) override {
 
 
+      for(auto matched_vertices : match_set){
+          os <<  matched_vertices.first << " " << matched_vertices.second << " is a match" <<  std::endl;
+      }
+
 #ifdef PROFILING
     VLOG(2) << "preprocess_time: " << preprocess_time << "s.";
     VLOG(2) << "exec_time: " << exec_time << "s.";
@@ -107,6 +111,7 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
 
   //unordered_map<string,vector<double>> &word_embeddings;
   oid_t u;
+  oid_t v;
   typename FRAG_T::template vertex_array_t<double>& partial_result;
   unordered_map<string,vector<double>> word_embeddings;
   vector<vector<pair<int,string>>> g_paths;
@@ -117,8 +122,8 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
   unordered_map<int,vector<int>> ecache_u;
   unordered_map<int,vector<int>> ecache_v;
   Graph GD;
-  double sigma;
-  double delta;
+  double sigma,sum;
+  double delta,result;
   DenseVertexSet<vid_t> curr_modified, next_modified;
 
 #ifdef PROFILING

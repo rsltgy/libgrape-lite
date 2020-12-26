@@ -77,31 +77,10 @@ namespace grape{
                          << "," << ca.first.second << ") -> " << ca.second.first << " " << ca.second.second.size()
                          << endl;
                 }
-
                 if(!result_of_spair){ // if spair of u and v is false, then do further calculation otherwise do nothing.
                     vertex_t frag_vert;
                     vertex_t o_v;
                     if(frag.GetInnerVertex(v,frag_vert)){                // if vertex v is in this fragment then sent message to other
-                        /*auto inner_vert = frag.InnerVertices();         // fragments so that they can calculate matching of border nodes
-                        for (auto i_v : inner_vert ) {
-                           auto a_e = frag.GetOutgoingAdjList(i_v);
-                           vector<std::pair<int,int>> msg;
-                            for(auto a_g_e : a_e){
-                               o_v = a_g_e.get_neighbor();
-                               if (frag.IsOuterVertex(o_v)) {
-                                   // If outer vertex is not descendant of vertex u then there should not be
-                                   // a message
-                                   if(std::find(g_descendants[v].begin(),g_descendants[v].end(), frag.GetId(o_v)) != g_descendants[v].end()){
-                                       cout << frag.Gid2Oid(frag.Vertex2Gid(i_v)) << " " << frag.GetId(o_v) <<  " is outgoing edge " << endl;
-                                       msg.push_back(std::pair<int,int>(frag.GetId(o_v),0));
-                                       channel_0.SyncStateOnOuterVertex<fragment_t,vector<std::pair<int,int>>>(frag,o_v,msg);
-                                   }
-                               }
-                           }
-                            //if(!msg.empty())
-                            //    channel_0.SyncStateOnOuterVertex<fragment_t,vector<std::pair<int,int>>>(frag,o_v,msg);
-
-                        }*/
                         auto outer_vertices = frag.OuterVertices();
                         map<unsigned int,std::pair<unsigned int,vector<std::pair<int,int>>>> msg;
 

@@ -95,6 +95,10 @@ class VpairContext : public VertexDataContext<FRAG_T, double> {
 
   void Output(std::ostream& os) override {
 
+      for(auto m : match_set){
+          os << u << " " << m << " is a match" <<  std::endl;
+      }
+
 
 #ifdef PROFILING
     VLOG(2) << "preprocess_time: " << preprocess_time << "s.";
@@ -105,6 +109,7 @@ class VpairContext : public VertexDataContext<FRAG_T, double> {
 
   //unordered_map<string,vector<double>> &word_embeddings;
   oid_t u;
+  oid_t v;
   typename FRAG_T::template vertex_array_t<double>& partial_result;
   unordered_map<string,vector<double>> word_embeddings;
   vector<vector<pair<int,string>>> g_paths;
@@ -114,8 +119,8 @@ class VpairContext : public VertexDataContext<FRAG_T, double> {
   unordered_map<std::pair<int,int>, pair<bool, vector<std::pair<int,int>>>, boost::hash<std::pair<int,int>>> cache;
   unordered_map<int,vector<int>> ecache_u, ecache_v;
   Graph GD;
-  double sigma;
-  double delta;
+  double sigma,sum;
+  double delta,result;
   DenseVertexSet<vid_t> curr_modified, next_modified;
 
 #ifdef PROFILING

@@ -96,7 +96,7 @@ class ParaMatch {
                              unordered_map<std::pair<int,int>, pair<bool, vector<std::pair<int,int>>>, boost::hash<std::pair<int,int>>> &cache,
                              unordered_map<string,vector<double>> &word_embedding, unordered_map<int,vector<int>> &ecache_u,unordered_map<int,vector<int>> &ecache_v){
 
-    cout << "Calling (" << u << "," << v << ")" << endl;
+    cout << frag.fid() << "Calling (" << u << "," << v << ")" << endl;
     vector<double> u_word_vector;
     Reader::calculate_word_vector(word_embedding,GD.nodes()[u],u_word_vector);
     vertex_t frag_vert;
