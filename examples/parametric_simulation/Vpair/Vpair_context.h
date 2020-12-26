@@ -117,6 +117,7 @@ class VpairContext : public VertexDataContext<FRAG_T, double> {
   vector<pair<int,int>> C;
   vector<int> match_set;
   unordered_map<std::pair<int,int>, pair<bool, vector<std::pair<int,int>>>, boost::hash<std::pair<int,int>>> cache;
+  std::unordered_map<std::pair<int,int>, vector<std::pair<int,int>>, boost::hash<std::pair<int,int>>>  rev;
   unordered_map<int,vector<int>> ecache_u, ecache_v;
   Graph GD;
   double sigma,sum;

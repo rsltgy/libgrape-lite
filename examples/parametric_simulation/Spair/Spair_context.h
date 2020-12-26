@@ -121,6 +121,7 @@ class SpairContext : public VertexDataContext<FRAG_T, double> {
   double sigma,delta,sum;
   bool result = false;
   unordered_map<std::pair<int,int>, pair<bool, vector<std::pair<int,int>>>, boost::hash<std::pair<int,int>>> cache;
+  std::unordered_map<std::pair<int,int>, vector<std::pair<int,int>>, boost::hash<std::pair<int,int>>>  rev;
   unordered_map<int,vector<int>> ecache_u, ecache_v;
   Graph GD;
   DenseVertexSet<vid_t> curr_modified, next_modified;

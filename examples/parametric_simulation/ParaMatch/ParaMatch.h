@@ -94,8 +94,16 @@ class ParaMatch {
                              vector<vector<pair<int,string>>> &g_paths,vector<vector<int>> &g_descendants,
                              const int &u,const int &v,const double &sigma, const double &delta,
                              unordered_map<std::pair<int,int>, pair<bool, vector<std::pair<int,int>>>, boost::hash<std::pair<int,int>>> &cache,
-                             unordered_map<string,vector<double>> &word_embedding, unordered_map<int,vector<int>> &ecache_u,unordered_map<int,vector<int>> &ecache_v){
-
+                             unordered_map<string,vector<double>> &word_embedding, unordered_map<int,vector<int>> &ecache_u,unordered_map<int,vector<int>> &ecache_v,
+                             std::unordered_map<std::pair<int,int>, vector<std::pair<int,int>>, boost::hash<std::pair<int,int>>>  &rev){
+    auto u_v = make_pair(u, v);
+    {
+      auto it = cache.find(u_v);
+      if (it != cache.end()) {
+          return it->second.first;
+      }
+   }
+      
     cout << frag.fid() << "Calling (" << u << "," << v << ")" << endl;
     vector<double> u_word_vector;
     Reader::calculate_word_vector(word_embedding,GD.nodes()[u],u_word_vector);
@@ -104,8 +112,8 @@ class ParaMatch {
     if(!frag.GetInnerVertex(v,frag_vert))
     {
         cout << " node " << v << " returning false " << endl;
-        cache[make_pair(u,v)].first = false;
-        cache[make_pair(u,v)].second.clear();
+        cache[u_v].first = false;
+        cache[u_v].second.clear();
         return false;
     }
     string v_data;
@@ -115,13 +123,13 @@ class ParaMatch {
     Reader::calculate_word_vector(word_embedding,v_data,v_word_vector);
     double score = cosine_similarity(u_word_vector,v_word_vector);
     if(score <= sigma){                         // if the label of node u and v do not match then return false
-      cache[make_pair(u,v)].first = false;
-      cache[make_pair(u,v)].second.clear();
+      cache[u_v].first = false;
+      cache[u_v].second.clear();
       return false;
     }
     if(GD.out_edges()[u].empty()){              // if node u is a leaf then return true
-      cache[make_pair(u,v)].first = true;
-      cache[make_pair(u,v)].second.clear();
+      cache[u_v].first = true;
+      cache[u_v].second.clear();
       return true;
     }
     if(ecache_u.find(u) == ecache_u.end()){
@@ -130,7 +138,7 @@ class ParaMatch {
     if(ecache_v.find(v) == ecache_v.end()){
       ecache_v[v] = g_descendants[v];
     }
-    cache[make_pair(u,v)].first = true;
+    cache[u_v].first = true;
     double sum = 0;
     bool match = false;
     vector<int> v_u_k = ecache_u[u];
@@ -166,18 +174,22 @@ class ParaMatch {
         //cout << "Returned for (" << u_prime_and_v_prime.first << "," << u_prime_and_v_prime.second << ")"<< endl;
       }
       else{
-        match = ParaMatch::match_pair(GD,frag,g_paths,g_descendants,u_prime_and_v_prime.first,u_prime_and_v_prime.second,sigma,delta,cache,word_embedding,ecache_u,ecache_v);
+        match = ParaMatch::match_pair(GD,frag,g_paths,g_descendants,u_prime_and_v_prime.first,u_prime_and_v_prime.second,
+                                      sigma,delta,cache,word_embedding,ecache_u,ecache_v,rev);
         //cout <<  "(" << u_prime_and_v_prime.first << "," << u_prime_and_v_prime.second << ") --> " << match << endl;
       }
       if(match){
         double local_sum = calculate_path_similarity(GD,g_paths,word_embedding, u, u_prime_and_v_prime.first, v, u_prime_and_v_prime.second);
         sum += local_sum;
-        cache[make_pair(u,v)].second.push_back(u_prime_and_v_prime);
+        cache[u_v].second.push_back(u_prime_and_v_prime);
         //cout << "sum of path is " << sum << " " << local_sum << " " << u_prime_and_v_prime.first << " " <<  u_prime_and_v_prime.second << endl;
         if (sum >= delta){
             //cout <<  "(" << u_prime_and_v_prime.first << "," << u_prime_and_v_prime.second << ") ---> " << sum << endl;
-            cache[make_pair(u,v)].first = true;
-          return true;
+            cache[u_v].first = true;
+            for(const auto& x: cache[u_v].second) {
+                rev[x].push_back(u_v);
+            }
+            return true;
         }
         //break;
       }
@@ -188,8 +200,16 @@ class ParaMatch {
         return true;
     }*/
 
-    cache[make_pair(u,v)].first = false;
+    cache[u_v].first = false;
 
+    for(const auto &u_p_v_p: rev[u_v]) {
+          cache.erase(u_p_v_p);
+    }
+
+    for(const auto &u_p_v_p: rev[u_v]) {
+          ParaMatch::match_pair(GD, frag, g_paths,g_descendants,u_p_v_p.first, u_p_v_p.second, sigma, delta, cache, word_embedding, ecache_u, ecache_v, rev);
+    }
+    rev[u_v].clear();
     /*for(auto u_p_v_p : cache){
       auto it = find_if(u_p_v_p.second.second.begin(),u_p_v_p.second.second.end(),
                         [&u,&v](std::pair<int,int> el){
@@ -215,7 +235,8 @@ class ParaMatch {
 
     unordered_map<std::pair<int,int> , pair<bool, vector<std::pair<int,int> >>, boost::hash<std::pair<int,int>>> cache;
     unordered_map<int,vector<int>> ecache_u, ecache_v;
-    return ParaMatch::match_pair(GD,frag,g_paths,g_descendants,u,v,sigma,delta,cache,word_embedding,ecache_u,ecache_v);
+    std::unordered_map<std::pair<int,int>, vector<std::pair<int,int>>, boost::hash<std::pair<int,int>>>  rev;
+    return ParaMatch::match_pair(GD,frag,g_paths,g_descendants,u,v,sigma,delta,cache,word_embedding,ecache_u,ecache_v,rev);
 
   };
 

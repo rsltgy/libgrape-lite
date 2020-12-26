@@ -33,6 +33,7 @@ namespace grape{
         void PEval(const fragment_t& frag, context_t& ctx,
                    message_manager_t& messages) {
 
+            auto &rev = ctx.rev;
             auto &GD = ctx.GD;
             auto &u = ctx.u;
             auto &v = ctx.v;
@@ -70,7 +71,7 @@ namespace grape{
 
             if(!pass_message){
                 //p.match(ctx.GD,frag,ctx.g_paths,ctx.g_descendants,ctx.word_embeddings,u,v,sigma,delta);
-                bool result_of_spair = p.match_pair(GD,frag,g_paths,g_descendants,u,v,sigma,delta,cache,word_embeddings,ecache_u,ecache_v);
+                bool result_of_spair = p.match_pair(GD,frag,g_paths,g_descendants,u,v,sigma,delta,cache,word_embeddings,ecache_u,ecache_v,rev);
                 cout << "here "<< endl;
                 for (auto &ca : ctx.cache) {
                     cout << "Fragment " << frag.fid() << " (" << ca.first.first
@@ -116,6 +117,7 @@ namespace grape{
         void IncEval(const fragment_t& frag, context_t& ctx,
                      message_manager_t& messages) {
 
+            auto &rev = ctx.rev;
             auto &GD = ctx.GD;
             auto &v = ctx.v;
             auto &cache = ctx.cache;
@@ -143,7 +145,7 @@ namespace grape{
                         auto pair_received = std::make_pair(m.first, m.second);
                         if(cache.find(pair_received) == cache.end()){
                             p.match_pair(GD, frag, g_paths, g_descendants, m.first, m.second, sigma, delta, cache,
-                                         word_embeddings, ecache_u, ecache_v);
+                                         word_embeddings, ecache_u, ecache_v,rev);
                             //if(cache[pair_received].first)
                               fragment_has_everything = true;
                         }

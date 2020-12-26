@@ -28,6 +28,7 @@ using vertex_t = typename fragment_t::vertex_t;
 void PEval(const fragment_t& frag, context_t& ctx,
            message_manager_t& messages) {
 
+  auto &rev = ctx.rev;
   auto &match_set = ctx.match_set;
   auto &C = ctx.C;
   auto &GD = ctx.GD;
@@ -100,7 +101,7 @@ void PEval(const fragment_t& frag, context_t& ctx,
     }
     else{
       ParaMatch<FRAG_T> p;
-      match = p.match_pair(GD,frag,g_paths,g_descendants,v.first,v.second.first,sigma,delta,cache,word_embeddings,ecache_u,ecache_v);
+      match = p.match_pair(GD,frag,g_paths,g_descendants,v.first,v.second.first,sigma,delta,cache,word_embeddings,ecache_u,ecache_v,rev);
         if(!match){ // if spair of u and v is false, then do further calculation otherwise do nothing.
             ctx.v = v.second.first;
             ctx.u = v.first;
@@ -146,6 +147,7 @@ void PEval(const fragment_t& frag, context_t& ctx,
 void IncEval(const fragment_t& frag, context_t& ctx,
              message_manager_t& messages) {
 
+    auto &rev = ctx.rev;
     auto &GD = ctx.GD;
     auto &cache = ctx.cache;
     auto &ecache_u = ctx.ecache_u;
@@ -173,7 +175,7 @@ void IncEval(const fragment_t& frag, context_t& ctx,
                 auto pair_received = std::make_pair(m.first, m.second);
                 if(cache.find(pair_received) == cache.end()){
                     p.match_pair(GD, frag, g_paths, g_descendants, m.first, m.second, sigma, delta, cache,
-                                 word_embeddings, ecache_u, ecache_v);
+                                 word_embeddings, ecache_u, ecache_v,rev);
                     fragment_has_everything = true;
                 }
             }

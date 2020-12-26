@@ -31,7 +31,7 @@ void PEval(const fragment_t& frag, context_t& ctx,
     auto oid = frag.Gid2Oid(frag.Vertex2Gid(v));
     std::cout << frag.fid()  << " " << oid << " " << frag.GetData(v) << std::endl;
   }*/
-
+  auto &rev = ctx.rev;
   auto &match_set = ctx.match_set;
   auto &C = ctx.C;
   auto &GD = ctx.GD;
@@ -89,7 +89,7 @@ void PEval(const fragment_t& frag, context_t& ctx,
     }
     else{
       int v_vertex = c.first;
-      match = p.match_pair(GD,frag,g_paths,g_descendants,u,v_vertex,sigma,delta,cache,word_embeddings,ecache_u,ecache_v);
+      match = p.match_pair(GD,frag,g_paths,g_descendants,u,v_vertex,sigma,delta,cache,word_embeddings,ecache_u,ecache_v,rev);
         if(!match){ // if spair of u and v is false, then do further calculation otherwise do nothing.
             ctx.v = v_vertex;
             vertex_t frag_vert;
@@ -133,6 +133,7 @@ void PEval(const fragment_t& frag, context_t& ctx,
     void IncEval(const fragment_t& frag, context_t& ctx,
              message_manager_t& messages) {
 
+        auto &rev = ctx.rev;
         auto &GD = ctx.GD;
         auto &v = ctx.v;
         auto &cache = ctx.cache;
@@ -161,7 +162,7 @@ void PEval(const fragment_t& frag, context_t& ctx,
                     auto pair_received = std::make_pair(m.first, m.second);
                     if(cache.find(pair_received) == cache.end()){
                         p.match_pair(GD, frag, g_paths, g_descendants, m.first, m.second, sigma, delta, cache,
-                                     word_embeddings, ecache_u, ecache_v);
+                                     word_embeddings, ecache_u, ecache_v,rev);
                         fragment_has_everything = true;
                     }
                 }
