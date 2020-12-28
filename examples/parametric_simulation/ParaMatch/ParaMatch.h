@@ -104,14 +104,14 @@ class ParaMatch {
       }
    }
       
-    cout << frag.fid() << "Calling (" << u << "," << v << ")" << endl;
+    //cout << "Frag " << frag.fid() << " Calling (" << u << "," << v << ")" << endl;
     vector<double> u_word_vector;
     Reader::calculate_word_vector(word_embedding,GD.nodes()[u],u_word_vector);
     vertex_t frag_vert;
     //return false; // if the vertex v is not in the fragment return false directly
     if(!frag.GetInnerVertex(v,frag_vert))
     {
-        cout << " node " << v << " returning false " << endl;
+        //cout << " node " << v << " returning false " << endl;
         cache[u_v].first = false;
         cache[u_v].second.clear();
         return false;

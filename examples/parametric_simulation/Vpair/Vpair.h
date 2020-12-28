@@ -101,7 +101,8 @@ void PEval(const fragment_t& frag, context_t& ctx,
                 for (vertex_t o_v : outer_vertices ) {
                     unsigned int fid = frag.GetFragId(o_v);
                     msg[fid].first = frag.fid();
-                    for(int n = 0 ; n < GD.number_of_nodes(); n++)
+                    //for(int n = 0 ; n < GD.number_of_nodes(); n++)
+                    for(int n = 0 ; n < 1; n++) // instead of all GD, just send a key to check all vertices in GD
                         msg[fid].second.push_back(std::make_pair(n,frag.Gid2Oid(frag.Vertex2Gid(o_v))));
                 }
                 for (auto m : msg ) {
@@ -160,7 +161,17 @@ void PEval(const fragment_t& frag, context_t& ctx,
                 bool fragment_has_everything = false;
                 for (auto m : message.second) {
                     auto pair_received = std::make_pair(m.first, m.second);
-                    if(cache.find(pair_received) == cache.end()){
+                    if(m.first == -1){
+                        // This call comes from Peval, execute all GD.
+                        for(int n = 0 ; n < GD.number_of_nodes(); n++){
+                            p.match_pair(GD, frag, g_paths, g_descendants, n, m.second, sigma, delta, cache,
+                                         word_embeddings, ecache_u, ecache_v,rev);
+                            if(cache[std::make_pair(n, m.second)].first){
+                                fragment_has_everything = true;
+                                break;
+                            }
+                        }
+                    }else if(cache.find(pair_received) == cache.end()){
                         p.match_pair(GD, frag, g_paths, g_descendants, m.first, m.second, sigma, delta, cache,
                                      word_embeddings, ecache_u, ecache_v,rev);
                         fragment_has_everything = true;
@@ -169,9 +180,9 @@ void PEval(const fragment_t& frag, context_t& ctx,
                 if(fragment_has_everything){
                     map<unsigned int,std::pair<unsigned int,vector<std::pair<int,int>>>> msg;
                     for (auto &ca : cache) {
-                        cout << "Fragment " << frag.fid() << " (" << ca.first.first
+                        /*cout << "Fragment " << frag.fid() << " (" << ca.first.first
                              << "," << ca.first.second << ") -> " << ca.second.first << " " << ca.second.second.size()
-                             << endl;
+                             << endl;*/
                         if (ca.second.first) {
                             vertex_t frag_vert;
                             frag.GetVertex(ca.first.first, frag_vert);
@@ -189,18 +200,18 @@ void PEval(const fragment_t& frag, context_t& ctx,
                         }
                     }
                     for (auto m : msg ) {
-                        cout << " frag " << frag.fid() << " is sending a message to frag" << m.first << endl;
+                        //cout << " frag " << frag.fid() << " is sending a message to frag" << m.first << endl;
                         channel_0.SendToFragment(m.first,m.second);
                     }
                 }else{
                     for (auto y : message.second) {
-                        cout << " frag " << frag.fid() << " got message from " << message.first << " " << y.first
-                             << " " << y.second << endl;
+                        /*cout << " frag " << frag.fid() << " got message from " << message.first << " " << y.first
+                             << " " << y.second << endl;*/
                         double local_sum = p.calculate_path_similarity(GD, g_paths, ctx.word_embeddings, ctx.u,
                                                                        y.first, v, y.second);
                         sum += local_sum;
-                        cout << " sum of " << ctx.u << " " << y.first << " " << v << " " << y.second << " is "
-                             << local_sum << " total " << sum << endl;
+                        /*cout << " sum of " << ctx.u << " " << y.first << " " << v << " " << y.second << " is "
+                             << local_sum << " total " << sum << endl;*/
                         if (sum >= ctx.delta) {
                             cout << sum << " Vertex u " << ctx.u << " and " << ctx.v << " is a match " << endl;
                             ctx.result = true;
