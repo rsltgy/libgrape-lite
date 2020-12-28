@@ -179,8 +179,8 @@ namespace grape{
                             for (vertex_t o_v : frag.OuterVertices()) {
                                 unsigned int fid = frag.GetFragId(o_v);
                                 msg[fid].first = frag.fid();
-                                for(int n = 0 ; n < GD.number_of_nodes(); n++)
-                                    msg[fid].second.push_back(std::make_pair(n,frag.Gid2Oid(frag.Vertex2Gid(o_v))));
+                                for(int n = 0 ; n < 1; n++)
+                                    msg[fid].second.push_back(std::make_pair(-1,frag.Gid2Oid(frag.Vertex2Gid(o_v))));
                             }
                         }
                         for (auto m : msg ) {

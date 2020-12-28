@@ -64,7 +64,7 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
         path_string += " " + temp_string;
 
       g_descendants_[from].push_back(to);
-      if(g_paths_[from].size() >= 5) continue;
+      if(g_paths_[from].size() >= 100) continue;
       g_paths_[from].push_back(make_pair(to,path_string));
     }
     d_file.close();

@@ -42,7 +42,7 @@ void PEval(const fragment_t& frag, context_t& ctx,
   auto &delta = ctx.delta;
   messages.InitChannels(thread_num(), 2 * 1023 * 64, 2 * 1024 * 64);
   auto& channel_0 = messages.Channels()[0];
-
+  cout << " candidates generation started " << endl;
   pointVec points;
   auto inner_vert = frag.InnerVertices();
   for (auto v : inner_vert ) {
@@ -74,14 +74,14 @@ void PEval(const fragment_t& frag, context_t& ctx,
         for(auto returned_match : NNs){
           //vertex_t v(returned_match.first);
           //auto es = frag.GetOutgoingAdjList(v);
-          C.push_back(make_pair(u_t,make_pair(returned_match.first,5)));
+          C.push_back(make_pair(u_t,make_pair(returned_match.first,u_t)));
           //cout << frag.fid() << " " <<  u_t << " " << returned_match.first << endl;
         }
       }
     }
 
   }
-  cout << " candidates generated " << endl;
+  cout << " candidates generated " << C.size() << endl;
   // We do not need the tree anymore, clear out.
   points.clear();
   points.shrink_to_fit();
@@ -116,7 +116,7 @@ void PEval(const fragment_t& frag, context_t& ctx,
                     msg[fid].first = frag.fid();
                     //for(int n = 0 ; n < GD.number_of_nodes(); n++)
                     for(int n = 0 ; n < 1; n++) // instead of all GD, just send a key to check all vertices in GD
-                        msg[fid].second.push_back(std::make_pair(n,frag.Gid2Oid(frag.Vertex2Gid(o_v))));
+                        msg[fid].second.push_back(std::make_pair(-1,frag.Gid2Oid(frag.Vertex2Gid(o_v))));
                 }
                 for (auto m : msg ) {
                     channel_0.SendToFragment(m.first,m.second);
@@ -128,7 +128,7 @@ void PEval(const fragment_t& frag, context_t& ctx,
                 for(auto wit : witness_vertices){
                     double local_sum = p.calculate_path_similarity(GD,g_paths,ctx.word_embeddings, ctx.u, wit.first, v.second.first, wit.second);
                     sum += local_sum;
-                    //cout << " sum of " << ctx.u << " " << wit.first << " " << v.second.first << " " << wit.second  << " is " << local_sum << " total " << sum << endl;
+                    cout << " sum of " << ctx.u << " " << wit.first << " " << v.second.first << " " << wit.second  << " is " << local_sum << " total " << sum << endl;
                 }
             }
         }else{
@@ -179,10 +179,10 @@ void IncEval(const fragment_t& frag, context_t& ctx,
                     for(int n = 0 ; n < GD.number_of_nodes(); n++){
                         p.match_pair(GD, frag, g_paths, g_descendants, n, m.second, sigma, delta, cache,
                                      word_embeddings, ecache_u, ecache_v,rev);
-                        if(cache[std::make_pair(n, m.second)].first){
+                        //if(cache[std::make_pair(n, m.second)].first){
                             fragment_has_everything = true;
-                            break;
-                        }
+                            //break;
+                        //}
                     }
                 }else if(cache.find(pair_received) == cache.end()){
                     p.match_pair(GD, frag, g_paths, g_descendants, m.first, m.second, sigma, delta, cache,
@@ -208,8 +208,8 @@ void IncEval(const fragment_t& frag, context_t& ctx,
                     for (vertex_t o_v : frag.OuterVertices()) {
                         unsigned int fid = frag.GetFragId(o_v);
                         msg[fid].first = frag.fid();
-                        for(int n = 0 ; n < GD.number_of_nodes(); n++)
-                            msg[fid].second.push_back(std::make_pair(n,frag.Gid2Oid(frag.Vertex2Gid(o_v))));
+                        for(int n = 0 ; n < 1; n++)
+                            msg[fid].second.push_back(std::make_pair(-1,frag.Gid2Oid(frag.Vertex2Gid(o_v))));
                     }
                 }
                 for (auto m : msg ) {

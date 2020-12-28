@@ -103,7 +103,7 @@ void PEval(const fragment_t& frag, context_t& ctx,
                     msg[fid].first = frag.fid();
                     //for(int n = 0 ; n < GD.number_of_nodes(); n++)
                     for(int n = 0 ; n < 1; n++) // instead of all GD, just send a key to check all vertices in GD
-                        msg[fid].second.push_back(std::make_pair(n,frag.Gid2Oid(frag.Vertex2Gid(o_v))));
+                        msg[fid].second.push_back(std::make_pair(-1,frag.Gid2Oid(frag.Vertex2Gid(o_v))));
                 }
                 for (auto m : msg ) {
                     channel_0.SendToFragment(m.first,m.second);
@@ -195,8 +195,8 @@ void PEval(const fragment_t& frag, context_t& ctx,
                         for (vertex_t o_v : frag.OuterVertices()) {
                             unsigned int fid = frag.GetFragId(o_v);
                             msg[fid].first = frag.fid();
-                            for(int n = 0 ; n < GD.number_of_nodes(); n++)
-                                msg[fid].second.push_back(std::make_pair(n,frag.Gid2Oid(frag.Vertex2Gid(o_v))));
+                            for(int n = 0 ; n < 1; n++)
+                                msg[fid].second.push_back(std::make_pair(-1,frag.Gid2Oid(frag.Vertex2Gid(o_v))));
                         }
                     }
                     for (auto m : msg ) {

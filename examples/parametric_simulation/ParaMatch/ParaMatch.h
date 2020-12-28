@@ -63,6 +63,7 @@ class ParaMatch {
         break;
       }
     }
+    //cout << path_string_u << u << " u  " <<  u_prime <<endl;
     if (return_if_not_found_a_match) return 0;
 
     vector<pair<int,string>> paths_of_v = g_paths[v];
@@ -75,6 +76,7 @@ class ParaMatch {
         break;
       }
     }
+    //cout << path_string_v << v << " v " <<  v_prime <<endl;
     if (return_if_not_found_a_match) return 0;
 
 
