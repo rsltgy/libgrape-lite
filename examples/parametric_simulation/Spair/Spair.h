@@ -24,10 +24,8 @@ namespace grape{
     INSTALL_PARALLEL_WORKER(Spair<FRAG_T>, SpairContext<FRAG_T>, FRAG_T)
         using vertex_t = typename fragment_t::vertex_t;
 
-        //static constexpr MessageStrategy message_strategy =
-        //        MessageStrategy::kAlongEdgeToOuterVertex;
-
-        static constexpr LoadStrategy load_strategy = LoadStrategy::kOnlyOut;
+        static constexpr MessageStrategy message_strategy = MessageStrategy::kAlongIncomingEdgeToOuterVertex;
+        static constexpr LoadStrategy load_strategy = LoadStrategy::kBothOutIn;
 
 
         void PEval(const fragment_t& frag, context_t& ctx,

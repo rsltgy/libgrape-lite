@@ -29,7 +29,7 @@ namespace grape{
 
 
         static constexpr MessageStrategy message_strategy = MessageStrategy::kAlongIncomingEdgeToOuterVertex;
-        static constexpr LoadStrategy load_strategy = LoadStrategy::kOnlyIn;
+        static constexpr LoadStrategy load_strategy = LoadStrategy::kBothOutIn;
 
 
         void PEval(const fragment_t& frag, context_t& ctx,
@@ -82,7 +82,7 @@ namespace grape{
                             //vertex_t v(returned_match.first);
                             //auto es = frag.GetOutgoingAdjList(v);
                             C.push_back(make_pair(u_t,make_pair(returned_match.first,u_t)));
-                            //cout << frag.fid() << " " <<  u_t << " " << returned_match.first << endl;
+                            cout << frag.fid() << " " <<  u_t << " " << returned_match.first << endl;
                         }
                     }
                 }
@@ -165,6 +165,23 @@ namespace grape{
 
             for(auto message : messages_received){
                 auto v = frag.Gid2Oid(frag.Vertex2Gid(message.first));
+                cout <<  frag.fid() << " Node "  << v << endl;
+                for(auto  v_prime_and_all_u_primes : message.second ){
+                    int v_prime = v_prime_and_all_u_primes.first;
+                    for(auto u_prime : v_prime_and_all_u_primes.second){
+
+                        cout << v_prime << " " << u_prime << " pr" << endl;
+
+                    }
+
+                }
+
+            }
+
+
+
+            for(auto message : messages_received){
+                auto v = frag.Gid2Oid(frag.Vertex2Gid(message.first));
                 cout << "Node "  << v << endl;
                 std::pair<int,vector<int>> msg;
                 msg.first = v;
@@ -173,7 +190,7 @@ namespace grape{
                     pair<bool, vector<pair<int, int>>> match_result_and_witnesses = cache[std::make_pair(u,v)];
                     if(!match_result_and_witnesses.first){
                         auto witness_vertices =  match_result_and_witnesses.second;
-                        double &sum = ctx.sum;
+                        double sum;
                         ParaMatch<FRAG_T> p;
                         for(auto wit : witness_vertices){
                             double local_sum = p.calculate_path_similarity(GD,g_paths,ctx.word_embeddings, u, wit.first, v, wit.second);

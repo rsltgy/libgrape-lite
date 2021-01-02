@@ -95,8 +95,12 @@ class VpairContext : public VertexDataContext<FRAG_T, double> {
 
   void Output(std::ostream& os) override {
 
-      for(auto m : match_set){
-          os << u << " " << m << " is a match" <<  std::endl;
+      for(auto matched_vertices : match_set){
+          os <<  matched_vertices.first;
+          for(auto m : matched_vertices.second){
+              os << " " << m ;
+          }
+          os << endl;
       }
 
 
@@ -114,10 +118,11 @@ class VpairContext : public VertexDataContext<FRAG_T, double> {
   unordered_map<string,vector<double>> word_embeddings;
   vector<vector<pair<int,string>>> g_paths;
   vector<vector<int>> g_descendants;
-  vector<pair<int,int>> C;
-  vector<int> match_set;
+  vector<pair<int,pair<int,int>>> C;
+  map<int,vector<int>> match_set;
   unordered_map<std::pair<int,int>, pair<bool, vector<std::pair<int,int>>>, boost::hash<std::pair<int,int>>> cache;
-  std::unordered_map<std::pair<int,int>, vector<std::pair<int,int>>, boost::hash<std::pair<int,int>>>  rev;
+  unordered_map<int,vector<int>> message_cache;
+    std::unordered_map<std::pair<int,int>, vector<std::pair<int,int>>, boost::hash<std::pair<int,int>>>  rev;
   unordered_map<int,vector<int>> ecache_u, ecache_v;
   Graph GD;
   double sigma,sum;

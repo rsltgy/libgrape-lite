@@ -278,7 +278,7 @@ void Run() {
                                          fnum, spec);
     } else if(name == "Spair"){
       using GraphType = ImmutableEdgecutFragment<unsigned int, unsigned int, string, string,
-          LoadStrategy::kOnlyOut>;
+          LoadStrategy::kBothOutIn>;
       using AppType = Spair<GraphType>;
       CreateAndQuery<GraphType, AppType, string>(
           comm_spec, efile, vfile, out_prefix, fnum, spec, path_we,gd_file,
@@ -286,7 +286,7 @@ void Run() {
 
     }else if(name == "Vpair"){
       using GraphType = ImmutableEdgecutFragment<OID_T, VID_T, VDATA_T, EDATA_T,
-          LoadStrategy::kOnlyOut>;
+          LoadStrategy::kBothOutIn>;
       using AppType = Vpair<GraphType>;
       CreateAndQuery<GraphType, AppType, string>(
           comm_spec, efile, vfile, out_prefix, fnum, spec, path_we,gd_file,
@@ -294,7 +294,7 @@ void Run() {
 
     }else if(name == "Apair"){
       using GraphType = ImmutableEdgecutFragment<OID_T, VID_T, VDATA_T, EDATA_T,
-          LoadStrategy::kOnlyIn>;
+          LoadStrategy::kBothOutIn>;
       using AppType = Apair<GraphType>;
       CreateAndQuery<GraphType, AppType, string>(
           comm_spec, efile, vfile, out_prefix, fnum, spec, path_we,gd_file,
