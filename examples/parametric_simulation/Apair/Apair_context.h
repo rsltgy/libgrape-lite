@@ -34,7 +34,8 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
 
 
   void read_paths(const string &location, vector<vector<pair<int,string>>> &g_paths_, vector<vector<int>> &g_descendants_){
-    ifstream  d_file; d_file.open(location);
+
+      ifstream  d_file; d_file.open(location);
     if(!d_file) { cout << "unable to read file " << location << endl; exit(0); }
     int from, to; string str,path_string,temp_string;
     int max_vertex_number = 0;
@@ -51,7 +52,7 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
       }
     }
     d_file.close();
-    for(int i = 0; i < max_vertex_number; i++){
+    for(int i = 0; i <= max_vertex_number; i++){
       g_paths.push_back(vector<pair<int,string>>());
       g_descendants.push_back(vector<int>());
     }
@@ -79,11 +80,9 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
     // Read Graph gd
     this->GD.load_from_file(gd_file_);
     this->read_paths(g_pathfile_,g_paths,g_descendants);
-    this->u = u_;
     this->sigma = sigma_;
     this->delta = delta_;
 
-    partial_result.SetValue(std::numeric_limits<double>::max());
     curr_modified.Init(frag.Vertices());
     next_modified.Init(frag.Vertices());
 
@@ -99,7 +98,11 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
 
 
       for(auto matched_vertices : match_set){
-          os <<  matched_vertices.first << " " << matched_vertices.second << " is a match" <<  std::endl;
+          os <<  matched_vertices.first;
+          for(auto m : matched_vertices.second){
+              os << " " << m ;
+          }
+          os << endl;
       }
 
 #ifdef PROFILING
@@ -117,8 +120,9 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
   vector<vector<pair<int,string>>> g_paths;
   vector<vector<int>> g_descendants;
   vector<pair<int,pair<int,int>>> C;
-  vector<pair<int,int>> match_set;
+  map<int,vector<int>> match_set;
   unordered_map<std::pair<int,int>, pair<bool, vector<std::pair<int,int>>>, boost::hash<std::pair<int,int>>> cache;
+  unordered_map<int,vector<int>> message_cache;
   std::unordered_map<std::pair<int,int>, vector<std::pair<int,int>>, boost::hash<std::pair<int,int>>>  rev;
   unordered_map<int,vector<int>> ecache_u;
   unordered_map<int,vector<int>> ecache_v;

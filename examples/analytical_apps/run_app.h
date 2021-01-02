@@ -294,7 +294,7 @@ void Run() {
 
     }else if(name == "Apair"){
       using GraphType = ImmutableEdgecutFragment<OID_T, VID_T, VDATA_T, EDATA_T,
-          LoadStrategy::kOnlyOut>;
+          LoadStrategy::kOnlyIn>;
       using AppType = Apair<GraphType>;
       CreateAndQuery<GraphType, AppType, string>(
           comm_spec, efile, vfile, out_prefix, fnum, spec, path_we,gd_file,

@@ -23,6 +23,13 @@ public ParallelEngine {
 // specialize the templated worker.
 INSTALL_PARALLEL_WORKER(Vpair<FRAG_T>, VpairContext<FRAG_T>, FRAG_T)
 using vertex_t = typename fragment_t::vertex_t;
+
+
+    //static constexpr MessageStrategy message_strategy =
+    //        MessageStrategy::kAlongEdgeToOuterVertex;
+
+    static constexpr LoadStrategy load_strategy = LoadStrategy::kOnlyOut;
+
 void PEval(const fragment_t& frag, context_t& ctx,
            message_manager_t& messages) {
 

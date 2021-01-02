@@ -52,7 +52,7 @@ class ParaMatch {
                                           unordered_map<string,vector<double>> &word_embeddings, const int &u, const int &u_prime,const int &v, const int &v_prime){
 
 
-      // Check the path between u and u_prime: if there is a path take the labels, else return 0
+    // Check the path between u and u_prime: if there is a path take the labels, else return 0
     vector<pair<int,string>> paths_of_u = GD.paths()[u];
     string path_string_u;
     bool return_if_not_found_a_match = true;
@@ -106,7 +106,7 @@ class ParaMatch {
       }
    }
       
-    //cout << "Frag " << frag.fid() << " Calling (" << u << "," << v << ")" << endl;
+    cout << "Frag " << frag.fid() << " Calling (" << u << "," << v << ")" << endl;
     vector<double> u_word_vector;
     Reader::calculate_word_vector(word_embedding,GD.nodes()[u],u_word_vector);
     vertex_t frag_vert;

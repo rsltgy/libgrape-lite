@@ -144,21 +144,23 @@ namespace grape{
                     for (auto m : message.second) {
                         auto pair_received = std::make_pair(m.first, m.second);
                         if(m.first == -1){
-                            // This call comes from Peval, execute all GD.
+                            cout << frag.fid() << " here " << m.first << " " << m.second << endl;
+                            for (auto &ca : cache) {
+                                cout << "Fragment cache" << frag.fid() << " (" << ca.first.first
+                                     << "," << ca.first.second << ") -> " << ca.second.first << " " << ca.second.second.size()
+                                     << endl;
+                            }
+
                             for(int n = 0 ; n < GD.number_of_nodes(); n++){
                                 p.match_pair(GD, frag, g_paths, g_descendants, n, m.second, sigma, delta, cache,
                                              word_embeddings, ecache_u, ecache_v,rev);
-                                if(cache[std::make_pair(n, m.second)].first){
-                                    fragment_has_everything = true;
-                                    break;
-                                }
                             }
+                            fragment_has_everything = true;
                         }else if(cache.find(pair_received) == cache.end()){
+                            cout << frag.fid() << " here " << m.first << " " << m.second << endl;
                             p.match_pair(GD, frag, g_paths, g_descendants, m.first, m.second, sigma, delta, cache,
                                          word_embeddings, ecache_u, ecache_v,rev);
-                            if(cache[pair_received].first){
                               fragment_has_everything = true;
-                            }
                         }
                     }
                     if(fragment_has_everything){
@@ -179,8 +181,8 @@ namespace grape{
                             for (vertex_t o_v : frag.OuterVertices()) {
                                 unsigned int fid = frag.GetFragId(o_v);
                                 msg[fid].first = frag.fid();
-                                for(int n = 0 ; n < 1; n++)
-                                    msg[fid].second.push_back(std::make_pair(-1,frag.Gid2Oid(frag.Vertex2Gid(o_v))));
+                                for(int n = 0 ; n < GD.number_of_nodes(); n++)
+                                    msg[fid].second.push_back(std::make_pair(n,frag.Gid2Oid(frag.Vertex2Gid(o_v))));
                             }
                         }
                         for (auto m : msg ) {
@@ -188,7 +190,6 @@ namespace grape{
                             channel_0.SendToFragment(m.first,m.second);
                         }
                     }else{
-
                         for (auto y : message.second) {
                             cout << " frag " << frag.fid() << " got message from " << message.first << " " << y.first
                                  << " " << y.second << endl;
