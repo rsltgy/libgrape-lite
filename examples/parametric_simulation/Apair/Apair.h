@@ -131,8 +131,8 @@ namespace grape{
                 //cout << frag.fid() << " " << oid  <<  endl;
                 if(frag.IsIncomingBorderVertex(i_v)){
                     //cout << " this is iborder vertex " <<  endl;
-                    std::pair<int,vector<int>> msg;
                     if(match_set.find(oid) != match_set.end()){
+                       std::pair<int,vector<int>> msg;
                        channel_0.SendMsgThroughIEdges(frag,i_v,std::make_pair(oid,match_set[oid]));
                     }
                 }
@@ -218,13 +218,12 @@ namespace grape{
                     for(auto i_v : inner_vertices){
                         auto oid = frag.Gid2Oid(frag.Vertex2Gid(i_v));
                         if(frag.IsIncomingBorderVertex(i_v) && v == oid){
-                            channel_0.SendMsgThroughIEdges(frag,i_v,std::make_pair(oid,match_set[oid]));
+                            if(match_set.find(oid) != match_set.end()) {
+                                channel_0.SendMsgThroughIEdges(frag, i_v, std::make_pair(oid, match_set[oid]));
+                            }
                         }
                     }
-
                 }
-
-
             }
 
         }
