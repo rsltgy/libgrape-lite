@@ -106,7 +106,7 @@ class ParaMatch {
       }
    }
       
-    cout << "Frag " << frag.fid() << " Calling (" << u << "," << v << ")" << endl;
+    //cout << "Frag " << frag.fid() << " Calling (" << u << "," << v << ")" << endl;
     vector<double> u_word_vector;
     Reader::calculate_word_vector(word_embedding,GD.nodes()[u],u_word_vector);
     vertex_t frag_vert;

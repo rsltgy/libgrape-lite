@@ -74,6 +74,7 @@ class VpairContext : public VertexDataContext<FRAG_T, double> {
             string gd_file_, string g_pathfile_,oid_t u_, oid_t v_,double sigma_,double delta_) {
     auto& frag = this->fragment();
     // Read word embeddings
+    timer_next("Reading Embeddings and data");
     Reader::read_word_vector(path_of_word_embeddings_,word_embeddings);
     // Read Graph gd
     this->GD.load_from_file(gd_file_);
@@ -81,7 +82,6 @@ class VpairContext : public VertexDataContext<FRAG_T, double> {
     this->u = u_;
     this->sigma = sigma_;
     this->delta = delta_;
-
     curr_modified.Init(frag.Vertices());
     next_modified.Init(frag.Vertices());
 
@@ -119,21 +119,16 @@ class VpairContext : public VertexDataContext<FRAG_T, double> {
   vector<vector<pair<int,string>>> g_paths;
   vector<vector<int>> g_descendants;
   vector<pair<int,pair<int,int>>> C;
-  map<int,vector<int>> match_set;
+  map<int,set<int>> match_set;
   unordered_map<std::pair<int,int>, pair<bool, vector<std::pair<int,int>>>, boost::hash<std::pair<int,int>>> cache;
   unordered_map<int,vector<int>> message_cache;
-    std::unordered_map<std::pair<int,int>, vector<std::pair<int,int>>, boost::hash<std::pair<int,int>>>  rev;
+  unordered_map<int,vector<int>> message_address;
+  unordered_map<std::pair<int,int>, vector<std::pair<int,int>>, boost::hash<std::pair<int,int>>>  rev;
   unordered_map<int,vector<int>> ecache_u, ecache_v;
   Graph GD;
   double sigma,sum;
   double delta,result;
   DenseVertexSet<vid_t> curr_modified, next_modified;
-
-#ifdef PROFILING
-  double preprocess_time = 0;
-  double exec_time = 0;
-  double postprocess_time = 0;
-#endif
 
 };
 
