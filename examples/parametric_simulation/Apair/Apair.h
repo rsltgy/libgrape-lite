@@ -112,25 +112,27 @@ namespace grape{
             auto outer_vertices = frag.OuterVertices();
 
             timer_next("Message Address Finding");
-            for(auto i_v : inner_vertices){
-                auto i_v_oid = frag.Gid2Oid(frag.Vertex2Gid(i_v));
-                for(auto o_v : outer_vertices){
-                    auto o_v_oid = frag.Gid2Oid(frag.Vertex2Gid(o_v));
-                    if(std::find(g_descendants[i_v_oid].begin(),g_descendants[i_v_oid].end(),o_v_oid) != g_descendants[i_v_oid].end()){
-                        message_address[o_v_oid].push_back(i_v_oid);
-                    }
+            for(auto o_v : outer_vertices){
+                auto o_v_oid = frag.Gid2Oid(frag.Vertex2Gid(o_v));
+                cout << frag.fid() << " is o_v_oid" << o_v_oid << endl;
+                auto i_e = frag.GetIncomingAdjList(o_v);
+                for(auto e : i_e){
+                    auto i_i_v = e.get_neighbor();
+                    auto i_v_oid = frag.Gid2Oid(frag.Vertex2Gid(i_i_v));
+                    cout << i_v_oid << " is ancestor of " << o_v_oid << endl;
+                    message_address[o_v_oid].push_back(i_v_oid);
                 }
             }
 
 
-
-
+            timer_next("Message Generating");
             for(auto i_v : inner_vertices){
                 auto oid = frag.Gid2Oid(frag.Vertex2Gid(i_v));
                 if(frag.IsIncomingBorderVertex(i_v)){
                     if(match_set.find(oid) != match_set.end()){
                        std::pair<int,set<int>> msg;
-                       channel_0.SendMsgThroughIEdges(frag,i_v,std::make_pair(oid,match_set[oid]));
+                        cout << frag.fid() << " sending message " << oid <<  endl;
+                        channel_0.SendMsgThroughIEdges(frag,i_v,std::make_pair(oid,match_set[oid]));
                     }
                 }
             }

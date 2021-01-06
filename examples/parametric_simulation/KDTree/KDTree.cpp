@@ -311,7 +311,7 @@ pointVec KDTree::neighborhood_points(  //
         double rad) {
 
     //cosine convert
-    rad = 5 * ( 1 - rad);
+    rad = 2 * ( 1 - rad);
     size_t level = 0;
     pointIndexArr nbh = neighborhood_(root, pt, rad, level);
     pointVec nbhp;
