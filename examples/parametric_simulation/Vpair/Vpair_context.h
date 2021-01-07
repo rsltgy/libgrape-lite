@@ -32,7 +32,7 @@ class VpairContext : public VertexDataContext<FRAG_T, double> {
         partial_result(this->data()) {}
 
 
-  void read_paths(const string &location, vector<vector<pair<int,string>>> &g_paths_, vector<vector<int>> &g_descendants_){
+  void read_paths(const string &location, vector<vector<pair<int,string>>> &g_paths_, vector<vector<int>> &g_descendants_,int k){
     ifstream  d_file; d_file.open(location);
     if(!d_file) { cout << "unable to read file " << location << endl; exit(0); }
     int from, to; string str,path_string,temp_string;
@@ -71,14 +71,14 @@ class VpairContext : public VertexDataContext<FRAG_T, double> {
 
 
   void Init(ParallelMessageManager& messages, string path_of_word_embeddings_,
-            string gd_file_, string g_pathfile_,oid_t u_, oid_t v_,double sigma_,double delta_) {
+            string gd_file_, string g_pathfile_,oid_t u_, oid_t v_,double sigma_,double delta_,int k) {
     auto& frag = this->fragment();
     // Read word embeddings
     timer_next("Reading Embeddings and data");
     Reader::read_word_vector(path_of_word_embeddings_,word_embeddings);
     // Read Graph gd
-    this->GD.load_from_file(gd_file_);
-    this->read_paths(g_pathfile_,g_paths,g_descendants);
+    this->GD.load_from_file(gd_file_, k);
+    this->read_paths(g_pathfile_,g_paths,g_descendants, k);
     this->u = u_;
     this->sigma = sigma_;
     this->delta = delta_;

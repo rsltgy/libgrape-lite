@@ -112,27 +112,25 @@ namespace grape{
             auto outer_vertices = frag.OuterVertices();
 
             timer_next("Message Address Finding");
+
             for(auto o_v : outer_vertices){
                 auto o_v_oid = frag.Gid2Oid(frag.Vertex2Gid(o_v));
-                cout << frag.fid() << " is o_v_oid" << o_v_oid << endl;
                 auto i_e = frag.GetIncomingAdjList(o_v);
                 for(auto e : i_e){
                     auto i_i_v = e.get_neighbor();
                     auto i_v_oid = frag.Gid2Oid(frag.Vertex2Gid(i_i_v));
-                    cout << i_v_oid << " is ancestor of " << o_v_oid << endl;
+                    //cout << i_v_oid << " is ancestor of " << o_v_oid << endl;
                     message_address[o_v_oid].push_back(i_v_oid);
                 }
             }
 
 
-            timer_next("Message Generating");
+
             for(auto i_v : inner_vertices){
                 auto oid = frag.Gid2Oid(frag.Vertex2Gid(i_v));
                 if(frag.IsIncomingBorderVertex(i_v)){
                     if(match_set.find(oid) != match_set.end()){
-                       std::pair<int,set<int>> msg;
-                        cout << frag.fid() << " sending message " << oid <<  endl;
-                        channel_0.SendMsgThroughIEdges(frag,i_v,std::make_pair(oid,match_set[oid]));
+                       channel_0.SendMsgThroughIEdges(frag,i_v,match_set[oid]);
                     }
                 }
             }
@@ -158,9 +156,11 @@ namespace grape{
             auto& channel_0 = messages.Channels()[0];
 
             timer_next("IncEval");
-            unordered_map<vertex_t, vector<std::pair<int,set<int>>>> messages_received;
-            messages.ParallelProcess<fragment_t, std::pair<int,set<int>>>(
-                    1, frag, [&messages_received](int tid, vertex_t v, std::pair<int,set<int>> msg) {
+            unordered_map<vertex_t, vector<set<int>>> messages_received;
+            messages.ParallelProcess<fragment_t, set<int>>(
+                    1, frag, [&frag,&messages_received](int tid, vertex_t v, set<int> msg) {
+                        auto v_received =  frag.Gid2Oid(frag.Vertex2Gid(v));
+                        cout << frag.fid() << " received " << v_received <<  endl;
                         messages_received[v].push_back(msg);
                     });
 
@@ -183,8 +183,9 @@ namespace grape{
                             }
 
                             for(auto  v_prime_and_all_u_primes : message.second ){
-                                int v_prime = v_prime_and_all_u_primes.first;
-                                for(auto u_prime : v_prime_and_all_u_primes.second){
+                                unsigned int v_prime = message_come_from;
+                                cout << "v  " << v << " v prime " << v_prime << endl;
+                                for(auto u_prime : v_prime_and_all_u_primes){
                                     double local_sum = p.calculate_path_similarity(GD,g_paths,ctx.word_embeddings, u, u_prime , v, v_prime);
                                     sum += local_sum;
                                     if (sum >= ctx.delta)  {

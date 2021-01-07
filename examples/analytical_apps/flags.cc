@@ -27,6 +27,7 @@ DEFINE_string(jobid, "", "jobid, only used in LDBC graphanalytics.");
 DEFINE_string(path_we, "", "Word embedding path");
 DEFINE_string(gd_file, "", "gd files");
 DEFINE_int64(vertex_u, 0, "vertex u");
+DEFINE_int64(k, 20, "k");
 DEFINE_int64(vertex_v, 0, "vertex u");
 DEFINE_double(sigma, 0.8, "sigma");
 DEFINE_double(delta, 1.2, "delta");

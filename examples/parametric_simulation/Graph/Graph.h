@@ -15,7 +15,7 @@ class Graph {
  public:
   Graph() {}
   //Load graph edge and node files from specified location
-  void load_from_file(const string &location);
+  void load_from_file(const string &location,int k);
   //clear out existence graph
   ~Graph(){ out_edges_.clear(); in_edges_.clear(); nodes_.clear();}
   inline const vector<string> & nodes() const { return nodes_; }
@@ -32,7 +32,7 @@ class Graph {
   vector<vector<int>> descendants_;       // Each node has descendants as a vector
   vector<vector<pair<int,string>>> paths_;             // all paths from each node, starting node,end node and edge strings along the path
   void read_nodes(Graph &g,const string &location);
-  void read_paths(Graph &g,const string &location);
+  void read_paths(Graph &g,const string &location,int k);
 
 };
 

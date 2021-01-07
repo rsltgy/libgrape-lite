@@ -38,7 +38,7 @@ void Graph::read_nodes(Graph &g,const string &location) {
   n_file.close();
 }
 
-void Graph::read_paths(Graph &g,const string &location){
+void Graph::read_paths(Graph &g,const string &location,int k){
 
   ifstream  d_file; d_file.open(location);
   if(!d_file) { cout << "unable to read file " << location << endl; quick_exit(0); }
@@ -50,14 +50,14 @@ void Graph::read_paths(Graph &g,const string &location){
     while(ss >> temp_string)           // if there is more edge label, read them
       path_string += " " + temp_string;
     g.descendants_[from].push_back(to);
-    if(g.paths_[from].size() >= 100) continue;
+    if(g.paths_[from].size() >= k) continue;
     g.paths_[from].push_back(make_pair(to,path_string));
   }
   d_file.close();
 
 }
 
-void Graph::load_from_file(const string &location){
+void Graph::load_from_file(const string &location,int k){
 
   // Read nodes of the graph from specified location
   read_nodes(*this,location + "g.v");
@@ -85,6 +85,6 @@ void Graph::load_from_file(const string &location){
   }
   e_file.close();
 
-  read_paths(*this, location + "path.txt");
+  read_paths(*this, location + "path.txt",k);
 
 }

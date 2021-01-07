@@ -29,6 +29,7 @@ DECLARE_string(gd_file);
 DECLARE_string(g_pathfile);
 DECLARE_int64(vertex_u);
 DECLARE_int64(vertex_v);
+DECLARE_int64(k);
 DECLARE_double(sigma);
 DECLARE_double(delta);
 DECLARE_int64(bfs_source);
