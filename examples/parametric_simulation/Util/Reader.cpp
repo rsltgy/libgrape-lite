@@ -27,7 +27,7 @@ void Reader::read_word_vector(string folder, unordered_map<string,vector<double>
     ss >> word;
     vector<double> embed;
     double elem;
-    for(int s = 0 ; s < 25 ; s++) {
+    for(int s = 0 ; s < 300 ; s++) {
       ss >> elem;
       embed.push_back(elem);
     }
