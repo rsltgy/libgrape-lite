@@ -62,7 +62,7 @@ namespace grape{
                 boost::trim_right(v_str);
                 Reader::calculate_word_vector(ctx.word_embeddings,v_str,v_g_word_vector);
                 if(!v_g_word_vector.empty()){
-                    auto oid = frag.Gid2Oid(frag.Vertex2Gid(v));
+                    auto oid = frag.GetId(v);
                     point_t t = make_pair(oid,v_g_word_vector);
                     points.push_back(t);
                 }
@@ -114,11 +114,11 @@ namespace grape{
             timer_next("Message Address Finding");
 
             for(auto o_v : outer_vertices){
-                auto o_v_oid = frag.Gid2Oid(frag.Vertex2Gid(o_v));
+                auto o_v_oid = frag.GetId(o_v);
                 auto i_e = frag.GetIncomingAdjList(o_v);
                 for(auto e : i_e){
                     auto i_i_v = e.get_neighbor();
-                    auto i_v_oid = frag.Gid2Oid(frag.Vertex2Gid(i_i_v));
+                    auto i_v_oid = frag.GetId(i_i_v);
                     //cout << i_v_oid << " is ancestor of " << o_v_oid << endl;
                     message_address[o_v_oid].push_back(i_v_oid);
                 }
@@ -127,7 +127,7 @@ namespace grape{
 
 
             for(auto i_v : inner_vertices){
-                auto oid = frag.Gid2Oid(frag.Vertex2Gid(i_v));
+                auto oid = frag.GetId(i_v);
                 if(frag.IsIncomingBorderVertex(i_v)){
                     if(match_set.find(oid) != match_set.end()){
                        channel_0.SendMsgThroughIEdges(frag,i_v,match_set[oid]);
@@ -159,13 +159,13 @@ namespace grape{
             unordered_map<vertex_t, vector<set<int>>> messages_received;
             messages.ParallelProcess<fragment_t, set<int>>(
                     1, frag, [&frag,&messages_received](int tid, vertex_t v, set<int> msg) {
-                        auto v_received =  frag.Gid2Oid(frag.Vertex2Gid(v));
+                        auto v_received =  frag.GetId(v);
                         cout << frag.fid() << " received " << v_received <<  endl;
                         messages_received[v].push_back(msg);
                     });
 
             for(auto message : messages_received){
-                auto message_come_from = frag.Gid2Oid(frag.Vertex2Gid(message.first));
+                auto message_come_from = frag.GetId(message.first);
                 std::pair<int,vector<int>> msg;
                 auto all_v_s = message_address[message_come_from];
                 for(unsigned int v : all_v_s){
@@ -215,7 +215,7 @@ namespace grape{
                     if(!msg.second.empty()){
                         auto inner_vertices = frag.InnerVertices();
                         for(auto i_v : inner_vertices){
-                            auto oid = frag.Gid2Oid(frag.Vertex2Gid(i_v));
+                            auto oid = frag.GetId(i_v);
                             if(frag.IsIncomingBorderVertex(i_v) && v == oid){
                                 if(match_set.find(oid) != match_set.end()) {
                                     channel_0.SendMsgThroughIEdges(frag, i_v, std::make_pair(oid, match_set[oid]));
