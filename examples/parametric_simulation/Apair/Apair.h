@@ -54,37 +54,42 @@ namespace grape{
 
             cout << "Candidate generation started at Frag " << frag.fid() <<  endl;
             timer_next("Candidate Generation");
-            pointVec points;
+
             auto inner_vert = frag.InnerVertices();
-            for (auto v : inner_vert ) {
+            {
+              pointVec points;
+
+              points.resize(inner_vert.size());
+
+              ForEach(inner_vert, [&](int tid, vertex_t v) {
                 string v_str = frag.GetData(v);
                 vector<double> v_g_word_vector;
                 boost::trim_right(v_str);
-                Reader::calculate_word_vector(ctx.word_embeddings,v_str,v_g_word_vector);
-                if(!v_g_word_vector.empty()){
-                    auto oid = frag.GetId(v);
-                    points.template emplace_back(oid,v_g_word_vector);
+                Reader::calculate_word_vector(ctx.word_embeddings, v_str,
+                                              v_g_word_vector);
+                if (!v_g_word_vector.empty()) {
+                  auto oid = frag.GetId(v);
+                  points[v.GetValue()] = std::make_pair(oid, v_g_word_vector);
                 }
-            }
+              });
 
-            KDTree tree(points);
+              KDTree tree(points);
 
-            for(int u_t = 0; u_t < GD.number_of_nodes(); u_t++){
-                if(!GD.nodes()[u_t].empty()){
-                    vector<double> u_t_word_vector;
-                    Reader::calculate_word_vector(word_embeddings,GD.nodes()[u_t],u_t_word_vector);
-                    if(!u_t_word_vector.empty()) {
-                        point_t t = make_pair(u_t,u_t_word_vector);
-                        auto NNs = tree.neighborhood_points(t, sigma);
-                        for(auto returned_match : NNs){
-                            C.emplace_back(u_t, make_pair(returned_match.first, u_t));
-                        }
-                    }
-                }
+              for(int u_t = 0; u_t < GD.number_of_nodes(); u_t++){
+                  if(!GD.nodes()[u_t].empty()){
+                      vector<double> u_t_word_vector;
+                      Reader::calculate_word_vector(word_embeddings,GD.nodes()[u_t],u_t_word_vector);
+                      if(!u_t_word_vector.empty()) {
+                          point_t t = make_pair(u_t,u_t_word_vector);
+                          auto NNs = tree.neighborhood_points(t, sigma);
+                          for(auto returned_match : NNs){
+                              C.emplace_back(u_t, make_pair(returned_match.first, u_t));
+                          }
+                      }
+                  }
+              }
             }
             cout << "Candidate generation ended at Frag " << frag.fid() << " with candidate size " << C.size() <<   endl;
-            points.clear();
-            points.shrink_to_fit();
 
             timer_next("Parametric Simulation from Candidates");
             sort(C.begin(),C.end(),[](const pair<int,pair<int,int>> &a, const pair<int,pair<int,int>> b){

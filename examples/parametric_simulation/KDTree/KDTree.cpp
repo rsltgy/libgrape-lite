@@ -146,8 +146,10 @@ KDTree::KDTree(pointVec &point_array) {
     leaf = std::make_shared< KDNode >();
     // iterators
     pointIndexArr arr;
-    for (size_t i = 0; i < point_array.size(); i++) {
-        arr.push_back(pointIndex(point_array.at(i).second, point_array.at(i).first));
+    for (auto &p:point_array) {
+      if (!p.second.empty()) {
+        arr.push_back(pointIndex(p.second, p.first));
+      }
     }
 
     auto begin = arr.begin();
