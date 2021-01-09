@@ -54,38 +54,42 @@ namespace grape{
 
             cout << "Candidate generation started at Frag " << frag.fid() <<  endl;
             timer_next("Candidate Generation");
-            pointVec points;
+
             auto inner_vert = frag.InnerVertices();
-            for (auto v : inner_vert ) {
+            {
+              pointVec points;
+
+              points.resize(inner_vert.size());
+
+              ForEach(inner_vert, [&](int tid, vertex_t v) {
                 string v_str = frag.GetData(v);
                 vector<double> v_g_word_vector;
                 boost::trim_right(v_str);
-                Reader::calculate_word_vector(ctx.word_embeddings,v_str,v_g_word_vector);
-                if(!v_g_word_vector.empty()){
-                    auto oid = frag.Gid2Oid(frag.Vertex2Gid(v));
-                    point_t t = make_pair(oid,v_g_word_vector);
-                    points.push_back(t);
+                Reader::calculate_word_vector(ctx.word_embeddings, v_str,
+                                              v_g_word_vector);
+                if (!v_g_word_vector.empty()) {
+                  auto oid = frag.GetId(v);
+                  points[v.GetValue()] = std::make_pair(oid, v_g_word_vector);
                 }
-            }
+              });
 
-            KDTree tree(points);
+              KDTree tree(points);
 
-            for(int u_t = 0; u_t < GD.number_of_nodes(); u_t++){
-                if(!GD.nodes()[u_t].empty()){
-                    vector<double> u_t_word_vector;
-                    Reader::calculate_word_vector(word_embeddings,GD.nodes()[u_t],u_t_word_vector);
-                    if(!u_t_word_vector.empty()) {
-                        point_t t = make_pair(u_t,u_t_word_vector);
-                        auto NNs = tree.neighborhood_points(t, sigma);
-                        for(auto returned_match : NNs){
-                            C.push_back(make_pair(u_t,make_pair(returned_match.first,u_t)));
-                        }
-                    }
-                }
+              for(int u_t = 0; u_t < GD.number_of_nodes(); u_t++){
+                  if(!GD.nodes()[u_t].empty()){
+                      vector<double> u_t_word_vector;
+                      Reader::calculate_word_vector(word_embeddings,GD.nodes()[u_t],u_t_word_vector);
+                      if(!u_t_word_vector.empty()) {
+                          point_t t = make_pair(u_t,u_t_word_vector);
+                          auto NNs = tree.neighborhood_points(t, sigma);
+                          for(auto returned_match : NNs){
+                              C.emplace_back(u_t, make_pair(returned_match.first, u_t));
+                          }
+                      }
+                  }
+              }
             }
             cout << "Candidate generation ended at Frag " << frag.fid() << " with candidate size " << C.size() <<   endl;
-            points.clear();
-            points.shrink_to_fit();
 
             timer_next("Parametric Simulation from Candidates");
             sort(C.begin(),C.end(),[](const pair<int,pair<int,int>> &a, const pair<int,pair<int,int>> b){
@@ -93,9 +97,10 @@ namespace grape{
             });
 
             bool match = false;
-            for(auto v : C){
-                auto it = cache.find(make_pair(v.first,v.second.first));
-                if(it != ctx.cache.end() && cache[make_pair(v.first,v.second.first)].first  ){
+            for(auto& v : C){
+                auto pair = make_pair(v.first,v.second.first);
+                auto it = cache.find(pair);
+                if(it != ctx.cache.end() && cache[pair].first  ){
                     match_set[v.second.first].insert(v.first);
                 }
                 else{
@@ -114,11 +119,11 @@ namespace grape{
             timer_next("Message Address Finding");
 
             for(auto o_v : outer_vertices){
-                auto o_v_oid = frag.Gid2Oid(frag.Vertex2Gid(o_v));
+                auto o_v_oid = frag.GetId(o_v);
                 auto i_e = frag.GetIncomingAdjList(o_v);
                 for(auto e : i_e){
                     auto i_i_v = e.get_neighbor();
-                    auto i_v_oid = frag.Gid2Oid(frag.Vertex2Gid(i_i_v));
+                    auto i_v_oid = frag.GetId(i_i_v);
                     //cout << i_v_oid << " is ancestor of " << o_v_oid << endl;
                     message_address[o_v_oid].push_back(i_v_oid);
                 }
@@ -127,7 +132,7 @@ namespace grape{
 
 
             for(auto i_v : inner_vertices){
-                auto oid = frag.Gid2Oid(frag.Vertex2Gid(i_v));
+                auto oid = frag.GetId(i_v);
                 if(frag.IsIncomingBorderVertex(i_v)){
                     if(match_set.find(oid) != match_set.end()){
                        channel_0.SendMsgThroughIEdges(frag,i_v,match_set[oid]);
@@ -159,30 +164,31 @@ namespace grape{
             unordered_map<vertex_t, vector<set<int>>> messages_received;
             messages.ParallelProcess<fragment_t, set<int>>(
                     1, frag, [&frag,&messages_received](int tid, vertex_t v, set<int> msg) {
-                        auto v_received =  frag.Gid2Oid(frag.Vertex2Gid(v));
+                        auto v_received =  frag.GetId(v);
                         cout << frag.fid() << " received " << v_received <<  endl;
                         messages_received[v].push_back(msg);
                     });
 
-            for(auto message : messages_received){
-                auto message_come_from = frag.Gid2Oid(frag.Vertex2Gid(message.first));
+            for(auto &message : messages_received){
+                auto message_come_from = frag.GetId(message.first);
                 std::pair<int,vector<int>> msg;
                 auto all_v_s = message_address[message_come_from];
                 for(unsigned int v : all_v_s){
                     msg.first = v;
                     vector<int> v_s = message_cache[v];
                     for(int u : v_s){
-                        pair<bool, vector<pair<int, int>>> match_result_and_witnesses = cache[std::make_pair(u,v)];
+                        auto u_v = make_pair(u, v);
+                        pair<bool, vector<pair<int, int>>> match_result_and_witnesses = cache[u_v];
                         if(!match_result_and_witnesses.first){
                             auto witness_vertices =  match_result_and_witnesses.second;
                             double sum;
                             ParaMatch<FRAG_T> p;
-                            for(auto wit : witness_vertices){
+                            for(auto& wit : witness_vertices){
                                 double local_sum = p.calculate_path_similarity(GD,g_paths,ctx.word_embeddings, u, wit.first, v, wit.second);
                                 sum += local_sum;
                             }
 
-                            for(auto  v_prime_and_all_u_primes : message.second ){
+                            for(auto & v_prime_and_all_u_primes : message.second ){
                                 unsigned int v_prime = message_come_from;
                                 cout << "v  " << v << " v prime " << v_prime << endl;
                                 for(auto u_prime : v_prime_and_all_u_primes){
@@ -191,7 +197,6 @@ namespace grape{
                                     if (sum >= ctx.delta)  {
                                         match_set[u].insert(v);
                                         msg.second.push_back(u);
-                                        auto u_v = make_pair(u, v);
                                         cache[u_v].first = false;
 
                                         for(const auto &u_p_v_p: rev[u_v]) {
@@ -215,11 +220,13 @@ namespace grape{
                     if(!msg.second.empty()){
                         auto inner_vertices = frag.InnerVertices();
                         for(auto i_v : inner_vertices){
-                            auto oid = frag.Gid2Oid(frag.Vertex2Gid(i_v));
+                            auto oid = frag.GetId(i_v);
                             if(frag.IsIncomingBorderVertex(i_v) && v == oid){
                                 if(match_set.find(oid) != match_set.end()) {
                                     channel_0.SendMsgThroughIEdges(frag, i_v, std::make_pair(oid, match_set[oid]));
                                 }
+                                // It looks like only one vertex satisfy the condition: v == oid. It's ok to put a break;
+                                break;
                             }
                         }
                     }
