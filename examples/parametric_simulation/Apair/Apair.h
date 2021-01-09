@@ -63,8 +63,7 @@ namespace grape{
                 Reader::calculate_word_vector(ctx.word_embeddings,v_str,v_g_word_vector);
                 if(!v_g_word_vector.empty()){
                     auto oid = frag.GetId(v);
-                    point_t t = make_pair(oid,v_g_word_vector);
-                    points.push_back(t);
+                    points.template emplace_back(oid,v_g_word_vector);
                 }
             }
 
@@ -93,9 +92,10 @@ namespace grape{
             });
 
             bool match = false;
-            for(auto v : C){
-                auto it = cache.find(make_pair(v.first,v.second.first));
-                if(it != ctx.cache.end() && cache[make_pair(v.first,v.second.first)].first  ){
+            for(auto& v : C){
+                auto pair = make_pair(v.first,v.second.first);
+                auto it = cache.find(pair);
+                if(it != ctx.cache.end() && cache[pair].first  ){
                     match_set[v.second.first].insert(v.first);
                 }
                 else{
@@ -164,7 +164,7 @@ namespace grape{
                         messages_received[v].push_back(msg);
                     });
 
-            for(auto message : messages_received){
+            for(auto &message : messages_received){
                 auto message_come_from = frag.GetId(message.first);
                 std::pair<int,vector<int>> msg;
                 auto all_v_s = message_address[message_come_from];
@@ -172,17 +172,18 @@ namespace grape{
                     msg.first = v;
                     vector<int> v_s = message_cache[v];
                     for(int u : v_s){
-                        pair<bool, vector<pair<int, int>>> match_result_and_witnesses = cache[std::make_pair(u,v)];
+                        auto u_v = make_pair(u, v);
+                        pair<bool, vector<pair<int, int>>> match_result_and_witnesses = cache[u_v];
                         if(!match_result_and_witnesses.first){
                             auto witness_vertices =  match_result_and_witnesses.second;
                             double sum;
                             ParaMatch<FRAG_T> p;
-                            for(auto wit : witness_vertices){
+                            for(auto& wit : witness_vertices){
                                 double local_sum = p.calculate_path_similarity(GD,g_paths,ctx.word_embeddings, u, wit.first, v, wit.second);
                                 sum += local_sum;
                             }
 
-                            for(auto  v_prime_and_all_u_primes : message.second ){
+                            for(auto & v_prime_and_all_u_primes : message.second ){
                                 unsigned int v_prime = message_come_from;
                                 cout << "v  " << v << " v prime " << v_prime << endl;
                                 for(auto u_prime : v_prime_and_all_u_primes){
@@ -191,7 +192,6 @@ namespace grape{
                                     if (sum >= ctx.delta)  {
                                         match_set[u].insert(v);
                                         msg.second.push_back(u);
-                                        auto u_v = make_pair(u, v);
                                         cache[u_v].first = false;
 
                                         for(const auto &u_p_v_p: rev[u_v]) {
@@ -220,6 +220,8 @@ namespace grape{
                                 if(match_set.find(oid) != match_set.end()) {
                                     channel_0.SendMsgThroughIEdges(frag, i_v, std::make_pair(oid, match_set[oid]));
                                 }
+                                // It looks like only one vertex satisfy the condition: v == oid. It's ok to put a break;
+                                break;
                             }
                         }
                     }
