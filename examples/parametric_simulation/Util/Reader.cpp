@@ -38,18 +38,18 @@ void Reader::read_word_vector(string folder, unordered_map<string,vector<double>
 
 
 
-void Reader::calculate_word_vector(unordered_map<string,vector<double>> &word_embeddings,string word,
+void Reader::calculate_word_vector(const unordered_map<string,vector<double>> &word_embeddings,const string& word,
                                    vector<double> &v_g_word_vector)
 {
 
   vector<string> each_word;
   boost::split(each_word, word, boost::is_any_of(" "));
   unsigned int cnt = 0;
-  for(string token : each_word){
+  for(const string& token : each_word){
     if(!token.empty()){
       if(word_embeddings.find(token) != word_embeddings.end()){
         cnt++;
-        vector<double> each_word_vector = word_embeddings[token];
+        const vector<double>& each_word_vector = word_embeddings.at(token);
         if(!v_g_word_vector.empty())
           std::transform (v_g_word_vector.begin(), v_g_word_vector.end(),
                           each_word_vector.begin(), v_g_word_vector.begin(),

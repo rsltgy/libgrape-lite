@@ -77,7 +77,7 @@ namespace grape{
                         point_t t = make_pair(u_t,u_t_word_vector);
                         auto NNs = tree.neighborhood_points(t, sigma);
                         for(auto returned_match : NNs){
-                            C.push_back(make_pair(u_t,make_pair(returned_match.first,u_t)));
+                            C.emplace_back(u_t, make_pair(returned_match.first, u_t));
                         }
                     }
                 }
