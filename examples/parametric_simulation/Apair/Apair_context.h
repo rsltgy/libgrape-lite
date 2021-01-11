@@ -83,8 +83,7 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
     this->sigma = sigma_;
     this->delta = delta_;
 
-    curr_modified.Init(frag.Vertices());
-    next_modified.Init(frag.Vertices());
+    messages_received.Init(frag.InnerVertices());
 
 #ifdef PROFILING
     preprocess_time = 0;
@@ -130,8 +129,7 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
   Graph GD;
   double sigma,sum;
   double delta,result;
-  DenseVertexSet<vid_t> curr_modified, next_modified;
-
+  VertexArray<vector<set<int>>, vid_t> messages_received;
 #ifdef PROFILING
   double preprocess_time = 0;
   double exec_time = 0;

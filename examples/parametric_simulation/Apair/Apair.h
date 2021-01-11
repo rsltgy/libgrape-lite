@@ -50,7 +50,6 @@ namespace grape{
             auto &sigma = ctx.sigma;
             auto &delta = ctx.delta;
             messages.InitChannels(thread_num(), 2 * 1023 * 64, 2 * 1024 * 64);
-            auto& channel_0 = messages.Channels()[0];
 
             cout << "Candidate generation started at Frag " << frag.fid() <<  endl;
             timer_next("Calculate word vector");
@@ -131,24 +130,14 @@ namespace grape{
                 }
             }
 
-//          ForEach(inner_vertices, [&](int tid, vertex_t i_v) {
-//            auto oid = frag.GetId(i_v);
-//            if(frag.IsIncomingBorderVertex(i_v)){
-//              if(match_set.find(oid) != match_set.end()){
-//                messages.Channels()[tid].SendMsgThroughIEdges(frag,i_v,match_set[oid]);
-//              }
-//            }
-//            });
-
-            for(auto i_v : inner_vertices){
-                auto oid = frag.GetId(i_v);
-                if(frag.IsIncomingBorderVertex(i_v)){
-                    if(match_set.find(oid) != match_set.end()){
-                       channel_0.SendMsgThroughIEdges(frag,i_v,match_set[oid]);
-                    }
-                }
+          ForEach(inner_vertices, [&](int tid, vertex_t i_v) {
+            auto oid = frag.GetId(i_v);
+            if(frag.IsIncomingBorderVertex(i_v)){
+              if(match_set.find(oid) != match_set.end()){
+                messages.Channels()[tid].SendMsgThroughIEdges(frag,i_v,match_set[oid]);
+              }
             }
-
+            });
         }
 
 
@@ -167,19 +156,22 @@ namespace grape{
             auto &match_set = ctx.match_set;
             auto &message_cache = ctx.message_cache;
             auto &message_address = ctx.message_address;
-            auto& channel_0 = messages.Channels()[0];
+            auto &messages_received = ctx.messages_received;
+            auto &channel_0 = messages.Channels()[0];
 
             timer_next("IncEval");
-            unordered_map<vertex_t, vector<set<int>>> messages_received;
             messages.ParallelProcess<fragment_t, set<int>>(
-                    1, frag, [&frag,&messages_received](int tid, vertex_t v, set<int> msg) {
-                        auto v_received =  frag.GetId(v);
-                        cout << frag.fid() << " received " << v_received <<  endl;
+                    1, frag, [&frag,&messages_received](int tid, vertex_t v, set<int>& msg) {
+                        // auto v_received =  frag.GetId(v);
+                        // cout << frag.fid() << " received " << v_received <<  endl;
                         messages_received[v].push_back(msg);
                     });
 
-            for(auto &message : messages_received){
-                auto message_come_from = frag.GetId(message.first);
+
+            for(auto vv : frag.InnerVertices()) {
+              auto &message = messages_received[vv];
+              if(!message.empty()) {
+                auto message_come_from = frag.GetId(vv);
                 std::pair<int,vector<int>> msg;
                 auto all_v_s = message_address[message_come_from];
                 for(unsigned int v : all_v_s){
@@ -197,7 +189,7 @@ namespace grape{
                                 sum += local_sum;
                             }
 
-                            for(auto & v_prime_and_all_u_primes : message.second ){
+                            for(auto & v_prime_and_all_u_primes : message ){
                                 unsigned int v_prime = message_come_from;
                                 cout << "v  " << v << " v prime " << v_prime << endl;
                                 for(auto u_prime : v_prime_and_all_u_primes){
@@ -240,6 +232,8 @@ namespace grape{
 
                 }
 
+              }
+              message.clear();
             }
 
         }
