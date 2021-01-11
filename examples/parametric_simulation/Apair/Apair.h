@@ -168,7 +168,7 @@ namespace grape{
                     });
 
 
-            for(auto vv : frag.InnerVertices()) {
+            for(auto vv : frag.Vertices()) {
               auto &message = messages_received[vv];
               if(!message.empty()) {
                 auto message_come_from = frag.GetId(vv);

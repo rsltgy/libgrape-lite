@@ -83,7 +83,7 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
     this->sigma = sigma_;
     this->delta = delta_;
 
-    messages_received.Init(frag.InnerVertices());
+    messages_received.Init(frag.Vertices());
 
 #ifdef PROFILING
     preprocess_time = 0;
