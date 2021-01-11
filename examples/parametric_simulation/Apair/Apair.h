@@ -53,7 +53,7 @@ namespace grape{
             auto& channel_0 = messages.Channels()[0];
 
             cout << "Candidate generation started at Frag " << frag.fid() <<  endl;
-            timer_next("Candidate Generation");
+            timer_next("Calculate word vector");
 
             auto inner_vert = frag.InnerVertices();
             {
@@ -72,6 +72,8 @@ namespace grape{
                   points[v.GetValue()] = std::make_pair(oid, v_g_word_vector);
                 }
               });
+
+              timer_next("Candidate Generation");
 
               KDTree tree(points);
 
@@ -129,7 +131,14 @@ namespace grape{
                 }
             }
 
-
+//          ForEach(inner_vertices, [&](int tid, vertex_t i_v) {
+//            auto oid = frag.GetId(i_v);
+//            if(frag.IsIncomingBorderVertex(i_v)){
+//              if(match_set.find(oid) != match_set.end()){
+//                messages.Channels()[tid].SendMsgThroughIEdges(frag,i_v,match_set[oid]);
+//              }
+//            }
+//            });
 
             for(auto i_v : inner_vertices){
                 auto oid = frag.GetId(i_v);
@@ -181,7 +190,7 @@ namespace grape{
                         pair<bool, vector<pair<int, int>>> match_result_and_witnesses = cache[u_v];
                         if(!match_result_and_witnesses.first){
                             auto witness_vertices =  match_result_and_witnesses.second;
-                            double sum;
+                            double sum = 0;
                             ParaMatch<FRAG_T> p;
                             for(auto& wit : witness_vertices){
                                 double local_sum = p.calculate_path_similarity(GD,g_paths,ctx.word_embeddings, u, wit.first, v, wit.second);
@@ -225,8 +234,6 @@ namespace grape{
                                 if(match_set.find(oid) != match_set.end()) {
                                     channel_0.SendMsgThroughIEdges(frag, i_v, std::make_pair(oid, match_set[oid]));
                                 }
-                                // It looks like only one vertex satisfy the condition: v == oid. It's ok to put a break;
-                                break;
                             }
                         }
                     }

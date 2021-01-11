@@ -20,7 +20,7 @@ void Graph::read_nodes(Graph &g,const string &location) {
 
   // Open file if exists, otherwise exit quickly
   ifstream  n_file; n_file.open(location);
-  if(!n_file) { cout << "unable to read file " << location << endl; quick_exit(0); }
+  if(!n_file) { cout << "unable to read file " << location << endl; exit(0); }
   int id; string str,label;
   // Read each line of the .v file and store in nodes data structure.
   while(getline( n_file,str)){
@@ -41,7 +41,7 @@ void Graph::read_nodes(Graph &g,const string &location) {
 void Graph::read_paths(Graph &g,const string &location,int k){
 
   ifstream  d_file; d_file.open(location);
-  if(!d_file) { cout << "unable to read file " << location << endl; quick_exit(0); }
+  if(!d_file) { cout << "unable to read file " << location << endl; exit(0); }
   int from, to; string str,path_string,temp_string;
   // Read each line of the path file and store in descendants data structure.
   while(getline( d_file,str)){
@@ -63,7 +63,7 @@ void Graph::load_from_file(const string &location,int k){
   read_nodes(*this,location + "g.v");
 
   ifstream  e_file; e_file.open(location + "g.e");
-  if(!e_file) { cout << "unable to read file " << location << endl; quick_exit(0); }
+  if(!e_file) { cout << "unable to read file " << location << endl; exit(0); }
   int from, to; string data,str;
 
   // initialise the graph structure, each node has an empty edge vector
