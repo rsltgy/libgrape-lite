@@ -136,7 +136,7 @@ namespace grape{
 
             MPI_Barrier(MPI_COMM_WORLD);
             if (frag.fid() == 0) {
-              LOG(INFO) << "Message Address Finding" << GetCurrentTime() - begin;
+              LOG(INFO) << "Message Address Finding " << GetCurrentTime() - begin;
             }
         }
 
@@ -158,7 +158,8 @@ namespace grape{
             auto &message_address = ctx.message_address;
             auto& channel_0 = messages.Channels()[0];
 
-            timer_next("IncEval");
+          auto begin = GetCurrentTime();
+
             unordered_map<vertex_t, vector<pair<int,set<int>>>> messages_received;
             messages.ParallelProcess<fragment_t, pair<int,set<int>>>(
                     1, frag, [&ctx,&messages_received](int tid, vertex_t v, pair<int,set<int>> msg) {
@@ -209,7 +210,6 @@ namespace grape{
                     }
                 }
 
-
                 if(!msg.second.empty()){
                     auto outer_vertices = frag.OuterVertices();
                     ForEach(outer_vertices, [&](int tid, vertex_t o_v) {
@@ -226,6 +226,10 @@ namespace grape{
                 }
             }
 
+            MPI_Barrier(MPI_COMM_WORLD);
+            if (frag.fid() == 0) {
+              LOG(INFO) << "IncEval " << GetCurrentTime() - begin;
+            }
         }
     };
 
