@@ -49,7 +49,7 @@ namespace grape{
             messages.InitChannels(thread_num(), 2 * 1023 * 64, 2 * 1024 * 64);
             auto& channel_0 = messages.Channels()[0];
 
-            timer_next("Candidate Generation");
+            auto begin = GetCurrentTime();
 
             auto inner_vert = frag.InnerVertices();
             {
@@ -86,7 +86,12 @@ namespace grape{
                 }
             }
 
-            timer_next("Parametric Simulation from Candidates");
+            MPI_Barrier(MPI_COMM_WORLD);
+            if (frag.fid() == 0) {
+              LOG(INFO) << "Candidate Generation " << GetCurrentTime() - begin;
+            }
+            begin = GetCurrentTime();
+
             sort(C.begin(),C.end(),[](const pair<int,pair<int,int>> &a, const pair<int,pair<int,int>> b){
                 return a.second.second < b.second.second;
             });
@@ -111,7 +116,11 @@ namespace grape{
             auto inner_vertices = frag.InnerVertices();
             auto outer_vertices = frag.OuterVertices();
 
-            timer_next("Message Address Finding");
+            MPI_Barrier(MPI_COMM_WORLD);
+            if (frag.fid() == 0) {
+              LOG(INFO) << "Parametric Simulation from Candidates " << GetCurrentTime() - begin;
+            }
+            begin = GetCurrentTime();
 
             ForEach(outer_vertices, [&](int tid, vertex_t o_v) {
                 auto o_v_oid = frag.GetId(o_v);
@@ -119,12 +128,16 @@ namespace grape{
                     vertex_t frag_vert;
                     if(frag.GetVertex(desc,frag_vert)){
                         if(match_set.find(desc) != match_set.end()) {
-                            messages.SyncStateOnOuterVertex(frag, o_v, make_pair(desc,match_set[desc]));
+                            messages.Channels()[tid].SyncStateOnOuterVertex(frag, o_v, make_pair(desc,match_set[desc]));
                         }
                     }
                 }
             });
-            timer_next("PEval");
+
+            MPI_Barrier(MPI_COMM_WORLD);
+            if (frag.fid() == 0) {
+              LOG(INFO) << "Message Address Finding" << GetCurrentTime() - begin;
+            }
         }
 
 
@@ -205,7 +218,7 @@ namespace grape{
                             vertex_t frag_vert;
                             if(frag.GetVertex(desc,frag_vert)){
                                 if(match_set.find(desc) != match_set.end()) {
-                                    messages.SyncStateOnOuterVertex(frag, o_v, make_pair(desc,match_set[desc]));
+                                    messages.Channels()[tid].SyncStateOnOuterVertex(frag, o_v, make_pair(desc,match_set[desc]));
                                 }
                             }
                         }
