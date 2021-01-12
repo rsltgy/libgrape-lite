@@ -49,7 +49,7 @@ namespace grape{
             messages.InitChannels(thread_num(), 2 * 1023 * 64, 2 * 1024 * 64);
             auto& channel_0 = messages.Channels()[0];
 
-            timer_next("Candidate Generation");
+            auto begin = GetCurrentTime();
 
             auto inner_vert = frag.InnerVertices();
             {
@@ -86,7 +86,12 @@ namespace grape{
                 }
             }
 
-            timer_next("Parametric Simulation from Candidates");
+            MPI_Barrier(MPI_COMM_WORLD);
+            if (frag.fid() == 0) {
+              LOG(INFO) << "Candidate Generation " << GetCurrentTime() - begin;
+            }
+            begin = GetCurrentTime();
+
             sort(C.begin(),C.end(),[](const pair<int,pair<int,int>> &a, const pair<int,pair<int,int>> b){
                 return a.second.second < b.second.second;
             });
@@ -111,7 +116,11 @@ namespace grape{
             auto inner_vertices = frag.InnerVertices();
             auto outer_vertices = frag.OuterVertices();
 
-            timer_next("Message Address Finding");
+            MPI_Barrier(MPI_COMM_WORLD);
+            if (frag.fid() == 0) {
+              LOG(INFO) << "Parametric Simulation from Candidates " << GetCurrentTime() - begin;
+            }
+            begin = GetCurrentTime();
 
             ForEach(outer_vertices, [&](int tid, vertex_t o_v) {
                 auto o_v_oid = frag.GetId(o_v);
@@ -124,7 +133,11 @@ namespace grape{
                     }
                 }
             });
-            timer_next("PEval");
+
+            MPI_Barrier(MPI_COMM_WORLD);
+            if (frag.fid() == 0) {
+              LOG(INFO) << "Message Address Finding " << GetCurrentTime() - begin;
+            }
         }
 
 
@@ -145,7 +158,8 @@ namespace grape{
             auto &message_address = ctx.message_address;
             auto& channel_0 = messages.Channels()[0];
 
-            timer_next("IncEval");
+          auto begin = GetCurrentTime();
+
             unordered_map<vertex_t, vector<pair<int,set<int>>>> messages_received;
             messages.ParallelProcess<fragment_t, pair<int,set<int>>>(
                     1, frag, [&ctx,&messages_received](int tid, vertex_t v, pair<int,set<int>> msg) {
@@ -196,7 +210,6 @@ namespace grape{
                     }
                 }
 
-
                 if(!msg.second.empty()){
                     auto outer_vertices = frag.OuterVertices();
                     ForEach(outer_vertices, [&](int tid, vertex_t o_v) {
@@ -213,6 +226,10 @@ namespace grape{
                 }
             }
 
+            MPI_Barrier(MPI_COMM_WORLD);
+            if (frag.fid() == 0) {
+              LOG(INFO) << "IncEval " << GetCurrentTime() - begin;
+            }
         }
     };
 
