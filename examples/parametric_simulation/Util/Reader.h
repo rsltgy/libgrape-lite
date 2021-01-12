@@ -1,6 +1,3 @@
-//
-// Created by rsltgy on 18/12/2020.
-//
 
 #ifndef LIBGRAPE_LITE_READER_H
 #define LIBGRAPE_LITE_READER_H

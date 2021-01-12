@@ -1,6 +1,4 @@
-//
-// Created by rsltgy on 20/12/2020.
-//
+
 
 #ifndef LIBGRAPE_LITE_APAIR_CONTEXT_H
 #define LIBGRAPE_LITE_APAIR_CONTEXT_H
@@ -17,11 +15,7 @@
 using namespace std;
 
 namespace grape{
-/**
-* @brief Context for the parallel version of Apair.
-*
-* @tparam FRAG_T
-*/
+
 template <typename FRAG_T>
 class ApairContext : public VertexDataContext<FRAG_T, double> {
  public:
@@ -42,7 +36,7 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
 
     while(getline( d_file,str)){
       istringstream ss(str);
-      ss >> from >> to >> path_string;   // Read id and following descendant id and path string
+      ss >> from >> to >> path_string;
       if(from >= to){
         if(from >= max_vertex_number)
           max_vertex_number = from;
@@ -57,11 +51,10 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
       g_descendants.push_back(vector<int>());
     }
     d_file.open(location);
-    // Read each line of the path file and store in descendants data structure.
     while(getline( d_file,str)){
       istringstream ss(str);
-      ss >> from >> to >> path_string;   // Read id and following descendant id and path string
-      while(ss >> temp_string)           // if there is more edge label, read them
+      ss >> from >> to >> path_string;
+      while(ss >> temp_string)
         path_string += " " + temp_string;
 
       g_descendants_[from].push_back(to);
@@ -75,16 +68,11 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
   void Init(ParallelMessageManager& messages, string path_of_word_embeddings_,
             string gd_file_, string g_pathfile_,oid_t u_, oid_t v_,double sigma_,double delta_,int k) {
     auto& frag = this->fragment();
-    // Read word embeddings
     Reader::read_word_vector(path_of_word_embeddings_,word_embeddings);
-    // Read Graph gd
     this->GD.load_from_file(gd_file_,k);
     this->read_paths(g_pathfile_,g_paths,g_descendants,k);
     this->sigma = sigma_;
     this->delta = delta_;
-
-    curr_modified.Init(frag.Vertices());
-    next_modified.Init(frag.Vertices());
 
 #ifdef PROFILING
     preprocess_time = 0;
@@ -112,7 +100,6 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
 #endif
   }
 
-  //unordered_map<string,vector<double>> &word_embeddings;
   oid_t u;
   oid_t v;
   typename FRAG_T::template vertex_array_t<double>& partial_result;
@@ -131,7 +118,6 @@ class ApairContext : public VertexDataContext<FRAG_T, double> {
   double sigma,sum;
   double delta,result;
   DenseVertexSet<vid_t> curr_modified, next_modified;
-
 #ifdef PROFILING
   double preprocess_time = 0;
   double exec_time = 0;

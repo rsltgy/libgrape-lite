@@ -111,7 +111,7 @@ class ParaMatch {
     Reader::calculate_word_vector(word_embedding,GD.nodes()[u],u_word_vector);
     vertex_t frag_vert;
     //return false; // if the vertex v is not in the fragment return false directly
-    if(!frag.GetInnerVertex(v,frag_vert))
+    if(!frag.GetVertex(v,frag_vert))
     {
         //cout << " node " << v << " returning false " << endl;
         cache[u_v].first = false;

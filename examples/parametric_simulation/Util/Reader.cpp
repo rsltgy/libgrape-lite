@@ -1,6 +1,3 @@
-//
-// Created by rsltgy on 18/12/2020.
-//
 
 #include "Reader.h"
 #include <algorithm>
@@ -33,7 +30,6 @@ void Reader::read_word_vector(string folder, unordered_map<string,vector<double>
     }
     word_embeddings[word] = embed;
   }
-  //std::cout << "word embedding size " << word_embeddings.size() << endl;
 }
 
 

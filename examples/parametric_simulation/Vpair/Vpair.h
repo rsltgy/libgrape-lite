@@ -1,6 +1,3 @@
-//
-// Created by rsltgy on 19/12/2020.
-//
 
 #ifndef LIBGRAPE_LITE_VPAIR_H
 #define LIBGRAPE_LITE_VPAIR_H
@@ -22,13 +19,12 @@ namespace grape{
                   public ParallelEngine {
 
 
-// specialize the templated worker.
     INSTALL_PARALLEL_WORKER(Vpair<FRAG_T>, VpairContext<FRAG_T>, FRAG_T)
         using vertex_t = typename fragment_t::vertex_t;
 
 
-        static constexpr MessageStrategy message_strategy = MessageStrategy::kAlongIncomingEdgeToOuterVertex;
-        static constexpr LoadStrategy load_strategy = LoadStrategy::kBothOutIn;
+        static constexpr MessageStrategy message_strategy = MessageStrategy::kSyncOnOuterVertex;
+        static constexpr LoadStrategy load_strategy = LoadStrategy::kOnlyIn;
 
         void PEval(const fragment_t& frag, context_t& ctx,
                    message_manager_t& messages) {
@@ -43,15 +39,12 @@ namespace grape{
             auto &ecache_v = ctx.ecache_v;
             auto &g_paths = ctx.g_paths;
             auto &message_cache = ctx.message_cache;
-            auto &message_address = ctx.message_address;
             auto &g_descendants = ctx.g_descendants;
             auto &word_embeddings = ctx.word_embeddings;
             double &sigma = ctx.sigma;
             double &delta = ctx.delta;
             messages.InitChannels(thread_num(), 2 * 1023 * 64, 2 * 1024 * 64);
-            auto& channel_0 = messages.Channels()[0];
 
-            cout << "Candidate generation started at Frag " << frag.fid() <<  endl;
             timer_next("Candidate Generation");
             pointVec points;
             auto inner_vert = frag.InnerVertices();
@@ -85,7 +78,6 @@ namespace grape{
                 }
             }
 
-            cout << "Candidate generation ended at Frag " << frag.fid() << " with candidate size " << C.size() <<   endl;
             points.clear();
             points.shrink_to_fit();
 
@@ -110,34 +102,22 @@ namespace grape{
 
 
 
-            auto inner_vertices = frag.InnerVertices();
             auto outer_vertices = frag.OuterVertices();
 
             timer_next("Message Address Finding");
-            for(auto o_v : outer_vertices){
-                auto o_v_oid = frag.Gid2Oid(frag.Vertex2Gid(o_v));
-                auto i_e = frag.GetIncomingAdjList(o_v);
-                for(auto e : i_e){
-                    auto i_i_v = e.get_neighbor();
-                    auto i_v_oid = frag.Gid2Oid(frag.Vertex2Gid(i_i_v));
-                    cout << o_v_oid << " is ancestor of " << i_v_oid << endl;
-                    message_address[o_v_oid].push_back(i_v_oid);
-                }
-            }
 
-            timer_next("Message Address Finding");
-            for(auto i_v : inner_vertices){
-                auto oid = frag.Gid2Oid(frag.Vertex2Gid(i_v));
-                if(frag.IsIncomingBorderVertex(i_v)){
-                    if(match_set.find(oid) != match_set.end()){
-                        std::pair<int,set<int>> msg;
-                        channel_0.SendMsgThroughIEdges(frag,i_v,std::make_pair(oid,match_set[oid]));
+
+            ForEach(outer_vertices, [&](int tid, vertex_t o_v) {
+                auto o_v_oid = frag.GetId(o_v);
+                for(auto &desc : g_descendants[o_v_oid]){
+                    vertex_t frag_vert;
+                    if(frag.GetVertex(desc,frag_vert)){
+                        if(match_set.find(desc) != match_set.end()) {
+                            messages.SyncStateOnOuterVertex(frag, o_v, make_pair(desc,match_set[desc]));
+                        }
                     }
                 }
-            }
-
-
-
+            });
 
             cout << "PEval Done" << endl;
 
@@ -152,14 +132,12 @@ namespace grape{
             auto &cache = ctx.cache;
             auto &ecache_u = ctx.ecache_u;
             auto &message_cache = ctx.message_cache;
-            auto &message_address = ctx.message_address;
             auto &ecache_v = ctx.ecache_v;
             auto &g_paths = ctx.g_paths;
             auto &g_descendants = ctx.g_descendants;
             auto &word_embeddings = ctx.word_embeddings;
             double &sigma = ctx.sigma;
             double &delta = ctx.delta;
-            auto& channel_0 = messages.Channels()[0];
             auto &match_set = ctx.match_set;
 
             timer_next("IncEval");
@@ -172,11 +150,9 @@ namespace grape{
             for(auto message : messages_received){
                 auto message_come_from = frag.Gid2Oid(frag.Vertex2Gid(message.first));
                 std::pair<int,vector<int>> msg;
-                auto all_v_s = message_address[message_come_from];
-                for(unsigned int v : all_v_s){
-                    msg.first = v;
-                    vector<int> v_s = message_cache[v];
-                    for(int u : v_s){
+                unsigned v = message_come_from;
+                    vector<int> u_s = message_cache[v];
+                    for(int u : u_s){
                         pair<bool, vector<pair<int, int>>> match_result_and_witnesses = cache[std::make_pair(u,v)];
                         if(!match_result_and_witnesses.first){
                             auto witness_vertices =  match_result_and_witnesses.second;
@@ -216,19 +192,20 @@ namespace grape{
                     }
 
                     if(!msg.second.empty()){
-                        auto inner_vertices = frag.InnerVertices();
-                        for(auto i_v : inner_vertices){
-                            auto oid = frag.Gid2Oid(frag.Vertex2Gid(i_v));
-                            if(frag.IsIncomingBorderVertex(i_v) && v == oid){
-                                if(match_set.find(oid) != match_set.end()) {
-                                    channel_0.SendMsgThroughIEdges(frag, i_v, std::make_pair(oid, match_set[oid]));
+                        auto outer_vertices = frag.OuterVertices();
+                        ForEach(outer_vertices, [&](int tid, vertex_t o_v) {
+                            auto o_v_oid = frag.GetId(o_v);
+                            for(auto &desc : g_descendants[o_v_oid]){
+                                vertex_t frag_vert;
+                                if(frag.GetVertex(desc,frag_vert)){
+                                    if(match_set.find(desc) != match_set.end()) {
+                                        messages.SyncStateOnOuterVertex(frag, o_v, make_pair(desc,match_set[desc]));
+                                    }
                                 }
                             }
-                        }
+                        });
                     }
 
-
-                }
             }
 
         }
