@@ -119,7 +119,7 @@ namespace grape{
                     vertex_t frag_vert;
                     if(frag.GetVertex(desc,frag_vert)){
                         if(match_set.find(desc) != match_set.end()) {
-                            messages.SyncStateOnOuterVertex(frag, o_v, make_pair(desc,match_set[desc]));
+                            messages.Channels()[tid].SyncStateOnOuterVertex(frag, o_v, make_pair(desc,match_set[desc]));
                         }
                     }
                 }
@@ -205,7 +205,7 @@ namespace grape{
                             vertex_t frag_vert;
                             if(frag.GetVertex(desc,frag_vert)){
                                 if(match_set.find(desc) != match_set.end()) {
-                                    messages.SyncStateOnOuterVertex(frag, o_v, make_pair(desc,match_set[desc]));
+                                    messages.Channels()[tid].SyncStateOnOuterVertex(frag, o_v, make_pair(desc,match_set[desc]));
                                 }
                             }
                         }
