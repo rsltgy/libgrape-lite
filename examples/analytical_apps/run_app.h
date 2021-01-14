@@ -116,7 +116,6 @@ void CreateAndQuery(const CommSpec& comm_spec, const string efile,
   timer_next("load application");
   auto worker = APP_T::CreateWorker(app, fragment);
   worker->Init(comm_spec, spec);
-  timer_next("run algorithm");
   worker->Query(forward<Args>(args)...);
   timer_next("print output");
 

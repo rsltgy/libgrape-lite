@@ -28,6 +28,8 @@ limitations under the License.
 #include "grape/parallel/parallel_engine.h"
 #include "grape/parallel/parallel_message_manager.h"
 #include "grape/worker/comm_spec.h"
+#include "timer.h"
+
 
 /**
  * @brief  A Worker manages the computation cycle. ParallelWorker is a kind of
@@ -86,7 +88,7 @@ class ParallelWorker {
     if (comm_spec_.worker_id() == kCoordinatorRank) {
       VLOG(1) << "[Coordinator]: Finished Init";
     }
-
+    timer_next("run algorithm");
     int round = 0;
 
     messages_.Start();
